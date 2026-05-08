@@ -1073,8 +1073,71 @@ function speak(text) {
   const selected = voices.find(v => v.name === state.selectedVoice);
   if (selected) utter.voice = selected;
   utter.volume = state.volume;
-  utter.rate = state.rate;
-  utter.pitch = state.pitch;
+
+  // Accent-aware rate & pitch — each language family sounds natural
+  // User can still override via settings sliders
+  if (selected) {
+    const lang = selected.lang || '';
+    if (lang.startsWith('en-IN') || lang.startsWith('hi')) {
+      // Indian English — slightly slower, natural cadence
+      utter.rate  = state.rate * 0.92;
+      utter.pitch = state.pitch * 1.05;
+    } else if (lang.startsWith('en-GB')) {
+      // British — crisp, slightly higher pitch
+      utter.rate  = state.rate * 0.96;
+      utter.pitch = state.pitch * 1.08;
+    } else if (lang.startsWith('en-AU')) {
+      // Australian — warm, medium pace
+      utter.rate  = state.rate * 0.95;
+      utter.pitch = state.pitch * 1.02;
+    } else if (lang.startsWith('en-US')) {
+      // American — clear, neutral
+      utter.rate  = state.rate;
+      utter.pitch = state.pitch;
+    } else if (lang.startsWith('ar') || lang.startsWith('ur')) {
+      // Arabic/Urdu — slower, slightly lower
+      utter.rate  = state.rate * 0.88;
+      utter.pitch = state.pitch * 0.96;
+    } else if (lang.startsWith('fr')) {
+      utter.rate  = state.rate * 0.93;
+      utter.pitch = state.pitch * 1.06;
+    } else if (lang.startsWith('es')) {
+      utter.rate  = state.rate * 1.02;
+      utter.pitch = state.pitch * 1.04;
+    } else if (lang.startsWith('de')) {
+      utter.rate  = state.rate * 0.90;
+      utter.pitch = state.pitch * 0.98;
+    } else if (lang.startsWith('ja') || lang.startsWith('ko')) {
+      utter.rate  = state.rate * 0.95;
+      utter.pitch = state.pitch * 1.1;
+    } else if (lang.startsWith('zh')) {
+      utter.rate  = state.rate * 0.90;
+      utter.pitch = state.pitch * 1.05;
+    } else {
+      utter.rate  = state.rate;
+      utter.pitch = state.pitch;
+    }
+  } else {
+    utter.rate  = state.rate;
+    utter.pitch = state.pitch;
+  }
+
+  // Android Chrome fix: long utterances get cut off — chunk if needed
+  if (text.length > 200) {
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    let i = 0;
+    const speakNext = () => {
+      if (i >= sentences.length) return;
+      const u = new SpeechSynthesisUtterance(sentences[i++]);
+      if (selected) u.voice = selected;
+      u.volume = utter.volume; u.rate = utter.rate; u.pitch = utter.pitch;
+      u.onend = speakNext;
+      speechSynthesis.speak(u);
+    };
+    speakNext();
+    return;
+  }
+
   speechSynthesis.speak(utter);
 }
 
@@ -1154,10 +1217,7 @@ function toggleReminders() {
   saveState();
 }
 
-function scheduleNext() {
-  clearTimeout(reminderTimer);
-  clearInterval(countdownTimer);
-
+function calcNextTime() {
   const now = new Date();
   let nextTime = null;
 
@@ -1168,7 +1228,7 @@ function scheduleNext() {
     const times = [...state.customTimes].sort();
     const nowStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     const next = times.find(t => t > nowStr) || times[0];
-    if (!next) return;
+    if (!next) return null;
     const [h, m] = next.split(':').map(Number);
     nextTime = new Date();
     nextTime.setHours(h, m, 0, 0);
@@ -1179,18 +1239,47 @@ function scheduleNext() {
   const [startH, startM] = state.startHour.split(':').map(Number);
   const [endH, endM] = state.endHour.split(':').map(Number);
   const startBound = new Date(nextTime); startBound.setHours(startH, startM, 0, 0);
-  const endBound = new Date(nextTime); endBound.setHours(endH, endM, 0, 0);
-  if (nextTime > endBound) {
-    nextTime = new Date(startBound.getTime() + 86400000);
-  }
+  const endBound   = new Date(nextTime); endBound.setHours(endH, endM, 0, 0);
+  if (nextTime > endBound)  nextTime = new Date(startBound.getTime() + 86400000);
   if (nextTime < startBound) nextTime = startBound;
+  return nextTime;
+}
+
+function scheduleNext() {
+  clearTimeout(reminderTimer);
+  clearInterval(countdownTimer);
+
+  const nextTime = calcNextTime();
+  if (!nextTime) return;
 
   state.nextReminderTimestamp = nextTime.getTime();
+  saveState(); // persist so SW can recover after sleep
+
   const delay = nextTime.getTime() - Date.now();
 
+  // Primary: JS setTimeout
   reminderTimer = setTimeout(fireReminder, delay);
+
+  // Backup: ask SW to also fire a notification at the same time
+  // so it works even when the tab is backgrounded / phone asleep
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SCHEDULE_NOTIFICATION',
+      delay: Math.max(delay, 0),
+      title: 'HydroBuddy',
+      body: `Time to hydrate, Boss! Glass ${state.glassesDrunk + 1} of ${state.targetGlasses}`
+    });
+  }
+
   updateCountdown();
-  countdownTimer = setInterval(updateCountdown, 1000);
+  countdownTimer = setInterval(() => {
+    // Drift correction: if we somehow missed the fire, trigger now
+    if (state.remindersActive && state.nextReminderTimestamp && Date.now() >= state.nextReminderTimestamp + 5000) {
+      fireReminder();
+      return;
+    }
+    updateCountdown();
+  }, 1000);
   updateReminderUI();
 }
 
@@ -1559,8 +1648,30 @@ document.addEventListener('DOMContentLoaded', () => {
   checkNotificationPermission();
 
   if (state.remindersActive) {
-    state.remindersActive = false;
-    showToast('Tap Start to resume Friday', 'info');
+    // Re-arm reminders after page reload
+    const missed = state.nextReminderTimestamp && Date.now() > state.nextReminderTimestamp;
+    if (missed) {
+      // We missed one — fire immediately then schedule next
+      setTimeout(() => fireReminder(), 1500);
+    } else {
+      scheduleNext();
+    }
+    updateReminderUI();
+  }
+});
+
+// Page Visibility API — catches phone wake-from-sleep
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state.remindersActive) {
+    const missed = state.nextReminderTimestamp && Date.now() > state.nextReminderTimestamp + 3000;
+    if (missed) {
+      fireReminder();
+    } else if (state.nextReminderTimestamp) {
+      // Re-arm setTimeout in case it was killed by the browser
+      clearTimeout(reminderTimer);
+      const delay = Math.max(state.nextReminderTimestamp - Date.now(), 0);
+      reminderTimer = setTimeout(fireReminder, delay);
+    }
   }
 });
 </script>
