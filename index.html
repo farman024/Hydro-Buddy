@@ -1105,42 +1105,51 @@ function getTimeOfDayPhrase() {
 // ═══════════════════════════════════════════
 // SPEECH
 // ═══════════════════════════════════════════
+function getFemaleVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  // Prioritize known female voices: Karen (macOS), Samantha (iOS), etc.
+  const female = voices.find(v =>
+    v.name.includes('Karen') || v.name.includes('Samantha') ||
+    v.name.includes('Moira') || v.name.includes('Fiona') ||
+    v.name.includes('Female')
+  );
+  return female || (voices.length > 0 ? voices[0] : null);
+}
+
 function speak(text) {
   try {
     if (!window.speechSynthesis) return;
+    // Wait for voices to load if needed
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => speak(text);
+      return;
+    }
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.volume = 1; u.rate = 0.92; u.pitch = 1.1;
-    window.speechSynthesis.speak(u);
-  } catch(e) {}
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voice = getFemaleVoice();
+    if (voice) utterance.voice = voice;
+    utterance.volume = 1;
+    utterance.rate = 0.9;
+    utterance.pitch = 1.2; // Slightly higher pitch for feminine sound
+    window.speechSynthesis.speak(utterance);
+  } catch(e) {
+    // Silent fallback for browser restrictions
+  }
 }
 
 function initVoices() {
-  const populate = () => {
-    const voices = speechSynthesis.getVoices();
-    const sel = document.getElementById('voice-select');
-    sel.innerHTML = '';
-    const preferred = voices.filter(v =>
-      v.lang.startsWith('en') &&
-      (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Samantha') ||
-       v.name.includes('Google UK English Female') || v.name.includes('Karen') || v.name.includes('Victoria'))
-    );
-    const list = preferred.length > 0 ? preferred : voices.filter(v => v.lang.startsWith('en'));
-    const all = list.length > 0 ? list : voices;
-    all.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.name;
-      opt.textContent = `${v.name} (${v.lang})`;
-      if (state.selectedVoice === v.name) opt.selected = true;
-      sel.appendChild(opt);
-    });
-    if (!state.selectedVoice && all.length > 0) {
-      state.selectedVoice = all[0].name;
-      sel.value = state.selectedVoice;
+  // Initialize speech synthesis
+  const checkVoices = () => {
+    const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    if (voices.length > 0) {
+      // Store female voice for reuse
+      _femaleVoice = getFemaleVoice();
+    } else {
+      // Wait for voices to load
+      setTimeout(checkVoices, 100);
     }
   };
-  if (speechSynthesis.getVoices().length > 0) populate();
-  else { speechSynthesis.onvoiceschanged = populate; setTimeout(populate, 800); }
+  checkVoices();
 }
 
 // ═══════════════════════════════════════════
