@@ -617,6 +617,15 @@ body::before {
 }
 .friday-side {
   display: none;
+  transition: filter 0.3s;
+}
+.friday-side.speaking {
+  filter: drop-shadow(0 0 24px var(--arc-glow)) brightness(1.2);
+  animation: talkBounce 0.4s ease-in-out 3;
+}
+@keyframes talkBounce {
+  0%,100% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.05); }
 }
 .friday-side img {
   width: 100%;
@@ -1352,6 +1361,17 @@ function updateReminderUI() {
 // ═══════════════════════════════════════════
 // WATER LOGGING
 // ═══════════════════════════════════════════
+function fridayTalk(phrase) {
+  speak(phrase);
+  updateFriday(phrase);
+  const el = document.querySelector('.friday-side');
+  if (el) {
+    el.classList.add('speaking');
+    clearTimeout(el._talkTimer);
+    el._talkTimer = setTimeout(() => el.classList.remove('speaking'), 2000);
+  }
+}
+
 function drinkGlass() {
   if (state.glassesDrunk >= state.targetGlasses) {
     showToast('Goal already reached!', 'success'); return;
@@ -1364,13 +1384,12 @@ function drinkGlass() {
 
   if (state.glassesDrunk === state.targetGlasses) {
     const phrase = getFridayPhrase('goal');
-    speak(phrase);
-    updateFriday(phrase);
+    fridayTalk(phrase);
     showToast('Goal complete! Amazing!', 'success');
     sendNotification('Goal Reached!', `${state.targetGlasses} glasses done, Boss! Outstanding!`);
   } else {
     const phrase = getFridayPhrase('onTrack', state.glassesDrunk);
-    updateFriday(phrase);
+    fridayTalk(phrase);
     showToast('Glass logged!', 'success');
   }
 }
