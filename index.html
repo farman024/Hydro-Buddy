@@ -973,6 +973,18 @@ body::before {
         <button class="outline-btn" id="test-notification"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f514.svg" class="twemoji"> Test Alert</button>
       </div>
 
+      <div class="section-divider">
+        <div class="divider-line"></div>
+        <div class="divider-text">Data</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="outline-btn" id="export-data"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4e5.svg" class="twemoji"> Export Data</button>
+        <button class="outline-btn" id="import-data"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4e4.svg" class="twemoji"> Import Data</button>
+      </div>
+      <div id="data-status" style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:14px;"></div>
+
       <button class="save-btn" id="save-settings">Save Settings</button>
 
     </div>
@@ -1557,6 +1569,53 @@ function applyStateToUI() {
 }
 
 // ═══════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════
+function exportData() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    data[key] = JSON.parse(localStorage.getItem(key));
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `hydro-buddy-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  document.getElementById('data-status').textContent = 'Data exported successfully';
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        Object.keys(data).forEach(key => localStorage.setItem(key, JSON.stringify(data[key])));
+        loadState();
+        applyStateToUI();
+        renderGlasses();
+        updateProgressUI();
+        updateReminderUI();
+        document.getElementById('data-status').textContent = 'Data imported. Settings applied.';
+        showToast('Data restored from backup', 'success');
+      } catch {
+        document.getElementById('data-status').textContent = 'Invalid backup file';
+        showToast('Import failed', 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ═══════════════════════════════════════════
 // TOAST
 // ═══════════════════════════════════════════
 function showToast(msg, type = 'info') {
@@ -1619,6 +1678,8 @@ document.getElementById('reset-day').onclick = resetDay;
 document.getElementById('save-settings').onclick = saveSettings;
 document.getElementById('test-voice').onclick = testVoice;
 document.getElementById('test-notification').onclick = testNotification;
+document.getElementById('export-data').onclick = exportData;
+document.getElementById('import-data').onclick = importData;
 
 document.getElementById('voice-volume').oninput = e => {
   state.volume = e.target.value / 100;
