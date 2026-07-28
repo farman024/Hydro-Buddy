@@ -615,6 +615,10 @@ body::before {
   display: flex; align-items: center; gap: 10px;
   margin: 4px 0 14px;
 }
+.friday-side {
+  display: none;
+}
+.friday-side img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .divider-line { flex: 1; height: 1px; background: rgba(0, 212, 255, 0.1); }
 .divider-text { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
 
@@ -659,6 +663,26 @@ body::before {
   .data-num { font-size: 32px; }
   .stat-val { font-size: 26px; }
   .hud-header { margin-bottom: 28px; }
+}
+
+@media (min-width: 1300px) {
+  .friday-side {
+    display: block;
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 260px;
+    height: auto;
+    max-height: 90vh;
+    z-index: 0;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 1600px) {
+  .friday-side { width: 320px; right: 40px; }
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -790,6 +814,10 @@ body::before {
       </div>
     </div>
   </div>
+</div>
+
+<div class="friday-side">
+  <img src="friday.png" alt="Friday">
 </div>
 
 <!-- Toast Container -->
