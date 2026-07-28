@@ -70,17 +70,6 @@ body::before {
   margin: 0 auto;
   padding: 20px 16px 120px;
 }
-.app-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.app-image {
-  display: none;
-}
-.app-main {
-  flex: 1;
-}
 
 /* ─── HUD HEADER ─── */
 .hud-header {
@@ -631,15 +620,7 @@ body::before {
 
 /* ─── DESKTOP ─── */
 @media (min-width: 768px) {
-  .app-inner { flex-direction: row; gap: 24px; align-items: flex-start; }
-  .app-image {
-    display: block;
-    flex: 0 0 160px;
-    position: sticky;
-    top: 24px;
-  }
-  .app-image img { width: 100%; height: auto; display: block; border-radius: 12px; }
-  .app { max-width: 620px; }
+  .app { max-width: 720px; }
 
   .reactor { width: 200px; height: 200px; }
   .data-num { font-size: 26px; }
@@ -670,12 +651,6 @@ body::before {
 <body>
 
 <div class="app">
-
-  <div class="app-inner">
-    <div class="app-image">
-      <img src="friday.png" alt="Friday">
-    </div>
-    <div class="app-main">
 
   <!-- Install Banner -->
   <div class="install-banner" id="install-banner">
@@ -794,10 +769,9 @@ body::before {
           </defs>
         </svg>
       </div>
-      </div> <!-- /ai-comms -->
-    </div> <!-- /app-main -->
-  </div> <!-- /app-inner -->
-</div> <!-- /app -->
+    </div>
+  </div>
+</div>
 
 <!-- Toast Container -->
 <div class="toast-container" id="toast-container"></div>
