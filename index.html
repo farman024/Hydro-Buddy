@@ -1062,8 +1062,10 @@ const fridayPhrases = {
     n => `Boss, this is important. You've only had ${n} glasses. Your focus and energy depend on water. Drink now.`,
   ],
   onTrack: [
-    n => `Perfect pace, Boss. ${n} glasses in. You're doing well — keep it going.`,
-    n => `Good discipline, Boss. ${n} glasses logged. Friday is proud of you.`,
+    n => `Glass ${n} logged. You're doing well, Boss. Keep it going.`,
+    n => `Glass ${n} logged. Good discipline, Boss. Friday is proud of you.`,
+    n => `Glass ${n} logged. ${state.targetGlasses - n} more to go. Stay sharp.`,
+    n => `Glass ${n} logged. Perfect pace, Boss. Your body thanks you.`,
   ],
   goal: [
     () => `Mission complete, Boss! You've hit your water goal for today. Outstanding discipline — you should be proud.`,
