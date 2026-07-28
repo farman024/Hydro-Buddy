@@ -178,33 +178,37 @@ body::before {
 .gd { transition: all 0.4s cubic-bezier(0.4,0,0.2,1); }
 .gd.active { fill: var(--arc); stroke: var(--arc); stroke-width: 2; filter: drop-shadow(0 0 6px var(--arc-glow)); }
 
-.reactor-center {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 2;
-  pointer-events: none;
+/* ─── DATA PANEL ─── */
+.data-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 12px 20px;
+  margin-top: 10px;
+  border: 1px solid rgba(0,212,255,0.06);
+  border-radius: 10px;
+  background: rgba(0,212,255,0.02);
 }
-.rc-count {
+.data-item { text-align: center; }
+.data-num {
   font-family: 'Playfair Display', serif;
-  font-size: 34px;
+  font-size: 24px;
   font-weight: 900;
   color: var(--text-bright);
   line-height: 1;
 }
-.rc-slash { color: var(--text-dim); font-size: 26px; margin: 0 3px; }
-.rc-label {
-  font-size: 9px;
-  font-weight: 600;
+.data-slash { color: var(--text-dim); font-size: 18px; margin: 0 2px; }
+.data-unit {
+  font-size: 10px;
   color: var(--text-dim);
-  letter-spacing: 2px;
   margin-top: 2px;
+  letter-spacing: 1.5px;
 }
-.rc-ml {
-  font-size: 11px;
-  color: rgba(255,255,255,0.25);
-  margin-top: 4px;
+.data-divider {
+  width: 1px;
+  height: 34px;
+  background: rgba(0,212,255,0.06);
 }
 
 /* ─── STAT GRID ─── */
@@ -610,7 +614,7 @@ body::before {
   .app { max-width: 720px; padding: 0 0 80px; }
 
   .reactor { width: 220px; height: 220px; }
-  .rc-count { font-size: 38px; }
+  .data-num { font-size: 28px; }
   .stat-val { font-size: 20px; }
   .comms-time { font-size: 20px; }
 
@@ -625,7 +629,7 @@ body::before {
 @media (min-width: 1024px) {
   .app { max-width: 800px; }
   .reactor { width: 240px; height: 240px; }
-  .rc-count { font-size: 40px; }
+  .data-num { font-size: 30px; }
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -689,11 +693,17 @@ body::before {
       </svg>
     </div>
 
-    <!-- Center readout overlay on the reactor -->
-    <div class="reactor-center">
-      <div class="rc-count"><span id="glasses-drunk">0</span><span class="rc-slash">/</span><span id="glasses-target">7</span></div>
-      <div class="rc-label">GLASSES</div>
-      <div class="rc-ml"><span id="ml-drunk">0</span> / <span id="ml-target">1750</span> ml</div>
+    <!-- HUD Data Panel (readable glasses & ml display) -->
+    <div class="data-panel">
+      <div class="data-item">
+        <span class="data-num"><span id="glasses-drunk">0</span><span class="data-slash">/</span><span id="glasses-target">7</span></span>
+        <div class="data-unit">GLASSES</div>
+      </div>
+      <div class="data-divider"></div>
+      <div class="data-item">
+        <span class="data-num"><span id="ml-drunk">0</span><span class="data-slash">/</span><span id="ml-target">1750</span></span>
+        <div class="data-unit">MILLILITERS</div>
+      </div>
     </div>
   </div>
 
