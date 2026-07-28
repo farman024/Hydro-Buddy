@@ -1167,22 +1167,41 @@ function getFemaleVoice() {
   return selectedVoice;
 }
 
+let _speechQueue = Promise.resolve();
 function speak(text) {
   try {
     if (!window.speechSynthesis) return;
-    // Wait for voices to load if needed
-    if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.onvoiceschanged = () => speak(text);
-      return;
-    }
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voice = getFemaleVoice();
-    if (voice) utterance.voice = voice;
-    utterance.volume = 1;
-    utterance.rate = 0.9;
-    utterance.pitch = 1.2; // Slightly higher pitch for feminine sound
-    window.speechSynthesis.speak(utterance);
+
+    // Chain speaks to avoid Chrome cancel-then-speak bug
+    _speechQueue = _speechQueue.then(() => new Promise(resolve => {
+      // Load voices if needed
+      const loadVoices = (attempt) => {
+        if (attempt > 10) { resolve(); return; }
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length === 0) {
+          window.speechSynthesis.onvoiceschanged = () => loadVoices(attempt + 1);
+          return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        const voice = _femaleVoice || getFemaleVoice();
+        if (voice) utterance.voice = voice;
+        utterance.volume = 1;
+        utterance.rate = 0.9;
+        utterance.pitch = 1.2;
+
+        utterance.onend = resolve;
+        utterance.onerror = resolve;
+
+        // Small delay to let cancel() settle (Chrome workaround)
+        setTimeout(() => {
+          try { window.speechSynthesis.speak(utterance); } catch(e) { resolve(); }
+        }, 50);
+      };
+      loadVoices(0);
+    }));
   } catch(e) {
     // Silent fallback for browser restrictions
   }
