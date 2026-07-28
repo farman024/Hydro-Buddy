@@ -1105,28 +1105,12 @@ function getTimeOfDayPhrase() {
 // ═══════════════════════════════════════════
 // SPEECH
 // ═══════════════════════════════════════════
-let _femaleVoice = null;
-function findFemaleVoice() {
-  if (_femaleVoice) return _femaleVoice;
-  const all = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-  _femaleVoice = all.find(v =>
-    v.lang.startsWith('en') &&
-    (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Samantha') ||
-     v.name.includes('Google UK English Female') || v.name.includes('Karen') || v.name.includes('Victoria') ||
-     v.name.includes('Microsoft') || v.name.includes('Natural'))
-  ) || all.find(v => v.lang.startsWith('en')) || all[0] || null;
-  return _femaleVoice;
-}
 function speak(text) {
   try {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    const voice = findFemaleVoice();
-    if (voice) u.voice = voice;
-    u.volume = 1;
-    u.rate = 0.92;
-    u.pitch = 1.1;
+    u.volume = 1; u.rate = 0.92; u.pitch = 1.1;
     window.speechSynthesis.speak(u);
   } catch(e) {}
 }
@@ -1346,7 +1330,6 @@ function updateReminderUI() {
 // WATER LOGGING
 // ═══════════════════════════════════════════
 function fridayTalk(phrase) {
-  speak(phrase);
   updateFriday(phrase);
   const el = document.querySelector('.friday-side');
   if (el) {
@@ -1356,6 +1339,15 @@ function fridayTalk(phrase) {
     clearTimeout(el._talkTimer);
     el._talkTimer = setTimeout(() => el.classList.remove('speaking'), 3500);
   }
+  // Speak directly — try both with and without voice selection
+  try {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(phrase);
+      u.volume = 1; u.rate = 0.92; u.pitch = 1.1;
+      window.speechSynthesis.speak(u);
+    }
+  } catch(e) {}
 }
 
 function drinkGlass() {
