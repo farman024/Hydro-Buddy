@@ -1108,49 +1108,63 @@ function getTimeOfDayPhrase() {
 function getFemaleVoice() {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
   if (!voices || voices.length === 0) {
+    console.log('❌ No voices available');
     return null;
   }
 
-  // Prioritize voices with feminine names and characteristics
-  const femaleKeywords = [
-    'Karen', 'Samantha', 'Zira', 'Hazel', 'Moira', 'Fiona', 'Kathy', 'Genevieve',
-    'Lena', 'Dorothy', 'Victoria', 'Labiba', 'Tessa', 'Ellen', 'Tanya', 'Nora',
-    'Vicki', 'Mary', 'Jodie', 'Celeste', 'Ana', 'Marlene', 'Lora', 'Jan', 'Milena',
-    'Karolina', 'Gabriela', 'Pauline', 'Petra', 'Eva', 'Ingrid', 'Marie', 'Claire',
-    'Sophie', 'Emma', 'Olivia', 'Ava', 'Isabella'
-  ];
+  console.log('🔊 Available voices:');
+  voices.forEach(v => {
+    console.log(`   • ${v.name} (lang: ${v.lang}, gender: ${v.gender || 'unknown'}, default: ${v.default})`);
+  });
 
-  // First priority: exact matches
-  let bestMatch = voices.find(v => femaleKeywords.includes(v.name));
+  // Advanced voice selection with gender and name priority
+  let selectedVoice = null;
 
-  // Second priority: names containing 'female' or 'woman' (case insensitive)
-  if (!bestMatch) {
-    bestMatch = voices.find(v =>
-      v.name.toLowerCase().includes('female') ||
-      v.name.toLowerCase().includes('woman')
-    );
+  // Priority 1: Known female voices by name (macOS/iOS)
+  const femaleVoices = voices.filter(v => {
+    const name = v.name.toLowerCase();
+    return name.includes('karen') || name.includes('samantha') ||
+           name.includes('zira') || name.includes('hazel') || name.includes('moira') ||
+           name.includes('fiona') || name.includes('victoria') || name.includes('pauline') ||
+           name.includes('petra') || name.includes('eva') || name.includes('ingrid') ||
+           name.includes('female') || (v.gender && v.gender === 'female');
+  });
+
+  if (femaleVoices.length > 0) {
+    selectedVoice = femaleVoices[0];
+    console.log('👩 Selected female voice by name/gender:', selectedVoice.name);
   }
 
-  // Third priority: English languages with typical female characteristics
-  if (!bestMatch) {
-    bestMatch = voices.find(v => {
-      const langOK = v.lang && v.lang.startsWith('en');
-      const maleKeywords = ['david', 'steve', 'john', 'james', 'robert', 'william', 'michael', 'richard'];
-      const name = v.name.toLowerCase();
-      return langOK && !maleKeywords.some(male => name.includes(male));
-    });
+  // Priority 2: English voices with feminine characteristics
+  if (!selectedVoice) {
+    const enVoices = voices.filter(v => v.lang && v.lang.startsWith('en'));
+    if (enVoices.length > 0) {
+      // Filter out obviously male names
+      const maleNames = ['david', 'steve', 'john', 'james', 'robert', 'william', 'michael', 'richard', 'paul', 'brian', 'charles', 'gary', 'jeff', 'johnny', 'mike', 'bill', 'mark', 'tom', 'ted', 'tim'];
+
+      const feminineEnglish = enVoices.filter(v => {
+        const name = v.name.toLowerCase();
+        return !maleNames.some(male => name === male || name.includes(male));
+      });
+
+      if (feminineEnglish.length > 0) {
+        selectedVoice = feminineEnglish[0];
+        console.log('👩 Selected feminine English voice:', selectedVoice.name);
+      } else {
+        selectedVoice = enVoices[0];
+        console.log('👩 Selected English voice (no clear female):', selectedVoice.name);
+      }
+    }
   }
 
-  // Fourth priority: any English voice or just first available
-  if (!bestMatch) {
-    bestMatch = voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
+  // Final fallback: any available voice
+  if (!selectedVoice && voices.length > 0) {
+    selectedVoice = voices[0];
+    console.log('⚠️ No clear female voice found, using:', selectedVoice.name);
   }
 
-  console.log('🎙️ Voice selection debug:');
-  console.log('   Available voices:', voices.map(v => `${v.name} (${v.lang})`));
-  console.log('   Selected voice:', bestMatch?.name, '(gender:', bestMatch?.gender, ')');
-
-  return bestMatch;
+  console.log('✅ Final voice selection:', selectedVoice?.name, '(gender:', selectedVoice?.gender, ')');
+  return selectedVoice;
 }
 
 function speak(text) {
