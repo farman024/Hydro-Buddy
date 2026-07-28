@@ -620,12 +620,29 @@ body::before {
 
 /* ─── DESKTOP ─── */
 @media (min-width: 768px) {
-  .app { max-width: 720px; }
+  .app { max-width: 900px; padding: 30px 32px 80px; }
+  body { padding: 0; }
 
-  .reactor { width: 200px; height: 200px; }
-  .data-num { font-size: 26px; }
-  .stat-val { font-size: 18px; }
-  .comms-time { font-size: 18px; }
+  .hud-header { margin-bottom: 20px; }
+  .hud-badge { font-size: 12px; }
+
+  .reactor-zone { flex-direction: row; align-items: center; gap: 40px; padding: 40px 0; }
+  .reactor { width: 240px; height: 240px; }
+  .data-panel { margin-top: 0; padding: 16px 32px; }
+  .data-num { font-size: 28px; }
+  .data-unit { font-size: 11px; }
+
+  .stat-grid { max-width: 100%; padding-top: 18px; margin-bottom: 20px; }
+  .stat-val { font-size: 22px; }
+  .stat-lbl { font-size: 9px; }
+
+  .hud-progress { max-width: 100%; }
+  .action-dock { max-width: 100%; }
+  .btn-primary { padding: 14px; font-size: 14px; }
+  .btn-secondary { width: 50px; font-size: 18px; }
+
+  .comms-time { font-size: 22px; }
+  .comms-msg { font-size: 14px; }
 
   .modal-sheet { max-width: 520px; left: 50%; transform: translateX(-50%) translateY(100%); border-radius: 28px; }
   .modal-overlay.open .modal-sheet { transform: translateX(-50%) translateY(0); }
@@ -636,10 +653,12 @@ body::before {
 }
 
 @media (min-width: 1024px) {
-  .layout-image { flex: 0 0 420px; }
-  .app { max-width: 600px; }
-  .reactor { width: 220px; height: 220px; }
-  .data-num { font-size: 28px; }
+  .app { max-width: 1100px; padding: 40px 48px 80px; }
+  .reactor { width: 280px; height: 280px; }
+  .reactor-zone { gap: 50px; }
+  .data-num { font-size: 32px; }
+  .stat-val { font-size: 26px; }
+  .hud-header { margin-bottom: 28px; }
 }
 
 ::-webkit-scrollbar { width: 6px; }
