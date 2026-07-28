@@ -1107,13 +1107,37 @@ function getTimeOfDayPhrase() {
 // ═══════════════════════════════════════════
 function getFemaleVoice() {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-  // Prioritize known female voices: Karen (macOS), Samantha (iOS), etc.
-  const female = voices.find(v =>
-    v.name.includes('Karen') || v.name.includes('Samantha') ||
-    v.name.includes('Moira') || v.name.includes('Fiona') ||
-    v.name.includes('Female')
-  );
-  return female || (voices.length > 0 ? voices[0] : null);
+  // Prioritized female voices across platforms
+  const femaleVoiceNames = [
+    // macOS
+    'Karen', 'Samantha', 'Moira', 'Fiona', 'Kathy', 'Genevieve', 'Lena', 'Dorothy',
+    // iOS
+    'Samantha', 'Karen', 'Victoria', 'Labiba', 'Khaled', 'Zira', 'Maged',
+    // Windows
+    'Zira', 'Hazel', 'Microsoft Zira', 'Microsoft David', 'David', 'Steve',
+    // Others
+    'Tessa', 'Kathy', 'Ellen', 'Tanya', 'Nora', 'Vicki', 'Mary', 'Jodie',
+    'Celeste', 'Ana', 'Marlene', 'Lora', 'Jan', 'Milena', 'Karolina', 'Gabriela'
+  ];
+  // First pass: exact name matches
+  let selected = voices.find(v => femaleVoiceNames.includes(v.name));
+  if (!selected) {
+    // Second pass: name includes female indicator
+    selected = voices.find(v =>
+      v.name.includes('female') ||
+      v.name.includes('she') ||
+      v.name.includes('her') ||
+      v.name.includes('girl') ||
+      (v.gender && (v.gender === 'female' || v.gender === 'female'))
+    );
+  }
+  if (!selected && voices.length > 0) {
+    // Last resort: first voice if none found
+    // But first check if we have any other clues
+    const commonFemales = ['Karen', 'Samantha', 'Zira', 'Hazel'];
+    selected = voices.find(v => commonFemales.includes(v.name)) || voices[0];
+  }
+  return selected;
 }
 
 function speak(text) {
@@ -1137,6 +1161,7 @@ function speak(text) {
   }
 }
 
+let _femaleVoice = null;
 function initVoices() {
   // Initialize speech synthesis
   const checkVoices = () => {
@@ -1144,6 +1169,9 @@ function initVoices() {
     if (voices.length > 0) {
       // Store female voice for reuse
       _femaleVoice = getFemaleVoice();
+      if (_femaleVoice) {
+        console.log('👩 Female voice found:', _femaleVoice.name);
+      }
     } else {
       // Wait for voices to load
       setTimeout(checkVoices, 100);
