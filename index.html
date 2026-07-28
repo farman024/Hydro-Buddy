@@ -1107,37 +1107,50 @@ function getTimeOfDayPhrase() {
 // ═══════════════════════════════════════════
 function getFemaleVoice() {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-  // Prioritized female voices across platforms
-  const femaleVoiceNames = [
-    // macOS
-    'Karen', 'Samantha', 'Moira', 'Fiona', 'Kathy', 'Genevieve', 'Lena', 'Dorothy',
-    // iOS
-    'Samantha', 'Karen', 'Victoria', 'Labiba', 'Khaled', 'Zira', 'Maged',
-    // Windows
-    'Zira', 'Hazel', 'Microsoft Zira', 'Microsoft David', 'David', 'Steve',
-    // Others
-    'Tessa', 'Kathy', 'Ellen', 'Tanya', 'Nora', 'Vicki', 'Mary', 'Jodie',
-    'Celeste', 'Ana', 'Marlene', 'Lora', 'Jan', 'Milena', 'Karolina', 'Gabriela'
+  if (!voices || voices.length === 0) {
+    return null;
+  }
+
+  // Prioritize voices with feminine names and characteristics
+  const femaleKeywords = [
+    'Karen', 'Samantha', 'Zira', 'Hazel', 'Moira', 'Fiona', 'Kathy', 'Genevieve',
+    'Lena', 'Dorothy', 'Victoria', 'Labiba', 'Tessa', 'Ellen', 'Tanya', 'Nora',
+    'Vicki', 'Mary', 'Jodie', 'Celeste', 'Ana', 'Marlene', 'Lora', 'Jan', 'Milena',
+    'Karolina', 'Gabriela', 'Pauline', 'Petra', 'Eva', 'Ingrid', 'Marie', 'Claire',
+    'Sophie', 'Emma', 'Olivia', 'Ava', 'Isabella'
   ];
-  // First pass: exact name matches
-  let selected = voices.find(v => femaleVoiceNames.includes(v.name));
-  if (!selected) {
-    // Second pass: name includes female indicator
-    selected = voices.find(v =>
-      v.name.includes('female') ||
-      v.name.includes('she') ||
-      v.name.includes('her') ||
-      v.name.includes('girl') ||
-      (v.gender && (v.gender === 'female' || v.gender === 'female'))
+
+  // First priority: exact matches
+  let bestMatch = voices.find(v => femaleKeywords.includes(v.name));
+
+  // Second priority: names containing 'female' or 'woman' (case insensitive)
+  if (!bestMatch) {
+    bestMatch = voices.find(v =>
+      v.name.toLowerCase().includes('female') ||
+      v.name.toLowerCase().includes('woman')
     );
   }
-  if (!selected && voices.length > 0) {
-    // Last resort: first voice if none found
-    // But first check if we have any other clues
-    const commonFemales = ['Karen', 'Samantha', 'Zira', 'Hazel'];
-    selected = voices.find(v => commonFemales.includes(v.name)) || voices[0];
+
+  // Third priority: English languages with typical female characteristics
+  if (!bestMatch) {
+    bestMatch = voices.find(v => {
+      const langOK = v.lang && v.lang.startsWith('en');
+      const maleKeywords = ['david', 'steve', 'john', 'james', 'robert', 'william', 'michael', 'richard'];
+      const name = v.name.toLowerCase();
+      return langOK && !maleKeywords.some(male => name.includes(male));
+    });
   }
-  return selected;
+
+  // Fourth priority: any English voice or just first available
+  if (!bestMatch) {
+    bestMatch = voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
+  }
+
+  console.log('🎙️ Voice selection debug:');
+  console.log('   Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+  console.log('   Selected voice:', bestMatch?.name, '(gender:', bestMatch?.gender, ')');
+
+  return bestMatch;
 }
 
 function speak(text) {
