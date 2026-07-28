@@ -726,6 +726,61 @@ body::before {
 }
 .divider-line { flex: 1; height: 1px; background: var(--border); }
 .divider-text { font-size: 10px; font-weight: 600; color: var(--muted-light); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ─── DESKTOP ─── */
+@media (min-width: 768px) {
+  body { padding: 40px 32px; }
+  .app { max-width: 720px; padding: 0 0 80px; }
+
+  .logo-icon { width: 56px; height: 56px; border-radius: 18px; font-size: 26px; }
+  .logo-text h1 { font-size: 26px; }
+  .logo-text p { font-size: 13px; }
+
+  .progress-card { padding: 32px; border-radius: 32px; }
+  .progress-count { font-size: 64px; }
+  .progress-count span { font-size: 34px; }
+  .progress-circle { width: 88px; height: 88px; }
+  .progress-circle svg { width: 88px; height: 88px; }
+  .progress-circle-text { font-size: 16px; }
+
+  .reminder-card { padding: 22px 28px; }
+  .reminder-time { font-size: 34px; }
+  .reminder-countdown { font-size: 13px; }
+
+  .glasses-card { padding: 28px; }
+  .glasses-grid { gap: 12px; }
+  .card-title { font-size: 20px; }
+  .glass-item { border-radius: 18px; }
+  .glass-icon { font-size: 24px; }
+  .glass-label { font-size: 10px; }
+
+  .stats-row { grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .stat-card { padding: 20px 16px; }
+  .stat-value { font-size: 26px; }
+  .stat-icon { font-size: 24px; }
+  .stat-label { font-size: 11px; }
+
+  .friday-card { padding: 22px 28px; }
+  .friday-text p:first-child { font-size: 12px; }
+  .friday-message { font-size: 14px; }
+
+  .drink-btn { padding: 18px; font-size: 16px; }
+
+  .modal-sheet { max-width: 520px; left: 50%; transform: translateX(-50%) translateY(100%); border-radius: 28px; }
+  .modal-overlay.open .modal-sheet { transform: translateX(-50%) translateY(0); }
+  .modal-body { padding: 16px 28px 40px; }
+  .form-input { font-size: 14px; }
+  .save-btn { font-size: 15px; }
+  .toast { font-size: 14px; padding: 16px 22px; }
+}
+
+@media (min-width: 1024px) {
+  .app { max-width: 800px; }
+  .glasses-grid { gap: 14px; }
+  .progress-count { font-size: 72px; }
+  .progress-circle { width: 96px; height: 96px; }
+  .progress-circle svg { width: 96px; height: 96px; }
+}
 </style>
 </head>
 <body>
