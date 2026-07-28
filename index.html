@@ -69,62 +69,42 @@ body::before {
   padding: 20px 16px 120px;
 }
 
-/* ─── HEADER ─── */
-.header {
+/* ─── HUD HEADER ─── */
+.hud-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  padding: 0 4px;
+  margin-bottom: 8px;
+  padding: 0 2px;
+  position: relative;
 }
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.hud-header::after {
+  content: '';
+  position: absolute;
+  bottom: -8px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.15), transparent);
 }
-
-.logo-icon {
-  width: 48px; height: 48px;
-  background: linear-gradient(135deg, var(--arc), var(--blue));
-  border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  box-shadow: 0 0 24px var(--arc-glow);
+.hud-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 2px;
 }
-
-.logo-text h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--text-bright);
-  letter-spacing: -0.5px;
-  line-height: 1;
-}
-
-.logo-text p {
-  font-size: 12px;
-  color: var(--text);
-  font-weight: 400;
-  margin-top: 2px;
-}
-
-.logo-text span { color: var(--arc); font-weight: 600; }
-
-.settings-btn {
-  width: 44px; height: 44px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+.hud-badge::before { content: '◤ '; color: var(--arc); }
+.hud-badge::after { content: ' ◢'; color: var(--arc); }
+.hud-settings {
+  width: 36px; height: 36px;
+  background: transparent;
+  border: 1px solid rgba(0,212,255,0.08);
+  border-radius: 10px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  color: var(--arc);
-  box-shadow: var(--shadow-sm);
+  color: var(--text-dim);
   transition: all 0.2s;
 }
-.settings-btn:hover { border-color: var(--arc); box-shadow: 0 0 16px var(--arc-glow); }
-.settings-btn:active { transform: scale(0.93); }
+.hud-settings:hover { border-color: var(--arc); color: var(--arc); }
+.hud-settings:active { transform: scale(0.92); }
 
 /* ─── INSTALL BANNER ─── */
 .install-banner {
@@ -159,468 +139,245 @@ body::before {
   font-size: 18px; cursor: pointer; padding: 4px; margin-left: 8px;
 }
 
-/* ─── PROGRESS CARD ─── */
-.progress-card {
-  background: linear-gradient(145deg, #0a1028 0%, #0f1a3a 100%);
-  border-radius: 28px;
-  padding: 24px;
-  margin-bottom: 16px;
+/* ─── REACTOR ZONE ─── */
+.reactor-zone {
   position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 40px rgba(0, 212, 255, 0.08);
-  border: 1px solid rgba(0, 212, 255, 0.08);
-}
-
-.progress-card::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 240px; height: 240px;
-  background: radial-gradient(circle, rgba(0, 212, 255, 0.12) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: arcPulse 4s ease-in-out infinite;
-}
-
-.progress-card::after {
-  content: '';
-  position: absolute;
-  bottom: -40px; left: -30px;
-  width: 160px; height: 160px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.progress-card .arc-scan {
-  position: absolute;
-  left: 10%; right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.2), transparent);
-  animation: scanLine 3s linear infinite;
-  z-index: 1;
-}
-@keyframes scanLine {
-  0% { top: 10%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 90%; opacity: 0; }
-}
-
-@keyframes arcPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.15); opacity: 0.6; }
-}
-
-.progress-top {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  position: relative; z-index: 1;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0 20px;
+  margin-bottom: 4px;
+}
+.reactor-zone::before {
+  content: '';
+  position: absolute;
+  top: 10%; left: -20px; right: -20px;
+  bottom: 0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(0,212,255,0.05) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.progress-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.45);
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  margin-bottom: 6px;
+/* Scan line across reactor area */
+.reactor-zone .scan {
+  position: absolute;
+  left: 5%; right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.12), transparent);
+  animation: scanMove 3s linear infinite;
+  z-index: 0;
 }
+@keyframes scanMove { 0% { top: 5%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
 
-.progress-count {
-  font-family: 'Playfair Display', serif;
-  font-size: 52px;
-  font-weight: 900;
-  color: white;
-  line-height: 1;
-}
-
-.progress-count span { color: var(--arc); font-size: 28px; text-shadow: 0 0 20px var(--arc-glow); }
-.progress-ml { font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 4px; }
-
-.progress-circle {
-  width: 72px; height: 72px;
+.reactor {
   position: relative;
+  width: 200px;
+  height: 200px;
 }
+.reactor svg { transform: rotate(-90deg); display: block; }
 
-.progress-circle svg { transform: rotate(-90deg); }
-
-.arc-track { fill: none; stroke: rgba(0,212,255,0.08); stroke-width: 8; }
+.arc-track { fill: none; stroke: rgba(0,212,255,0.06); stroke-width: 7; }
 .arc-fill {
-  fill: none;
-  stroke: url(#arc-g);
-  stroke-width: 8;
-  stroke-linecap: round;
+  fill: none; stroke: url(#arc-g); stroke-width: 7; stroke-linecap: round;
   transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1);
 }
-.arc-outer {
-  animation: arcSpin 8s linear infinite;
-  transform-origin: 50px 50px;
-}
-@keyframes arcSpin {
-  to { transform: rotate(360deg); }
-}
-.arc-core {
-  animation: corePulse 2s ease-in-out infinite;
-}
-@keyframes corePulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.15); }
-}
-.arc-core-dot {
-  animation: dotPulse 2s ease-in-out infinite;
-}
-@keyframes dotPulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
-}
-.progress-circle-text {
+.arc-outer { animation: arcSpin 8s linear infinite; transform-origin: 50px 50px; }
+@keyframes arcSpin { to { transform: rotate(360deg); } }
+.arc-core { animation: corePulse 2s ease-in-out infinite; }
+@keyframes corePulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+.arc-core-dot { animation: dotPulse 2s ease-in-out infinite; }
+@keyframes dotPulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+
+/* Glass orbit dots */
+.gd { transition: all 0.4s cubic-bezier(0.4,0,0.2,1); }
+.gd.active { fill: var(--arc); stroke: var(--arc); stroke-width: 2; filter: drop-shadow(0 0 6px var(--arc-glow)); }
+
+.reactor-center {
   position: absolute;
-  inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700;
-  color: var(--text-arc);
-  text-shadow: 0 0 12px var(--arc-glow);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+}
+.rc-count {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--text-bright);
+  line-height: 1;
+}
+.rc-slash { color: var(--text-dim); font-size: 26px; margin: 0 3px; }
+.rc-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+.rc-ml {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 4px;
 }
 
-.progress-bar-wrap {
-  position: relative; z-index: 1;
+/* ─── STAT GRID ─── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin: 0 auto 16px;
+  max-width: 320px;
+  width: 100%;
+  position: relative;
+  border-top: 1px solid rgba(0,212,255,0.06);
+  padding-top: 14px;
 }
-.progress-bar-track {
-  background: rgba(0,212,255,0.06);
+.stat-cell { text-align: center; }
+.stat-val {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-bright);
+  line-height: 1.1;
+}
+.stat-lbl {
+  display: block;
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+
+/* ─── HUD PROGRESS ─── */
+.hud-progress {
+  position: relative;
+  margin: 0 auto 18px;
+  max-width: 320px;
+  width: 100%;
+}
+.hud-progress-track {
+  background: rgba(0,212,255,0.04);
   border-radius: 100px;
-  height: 6px;
+  height: 3px;
   overflow: hidden;
   position: relative;
 }
-.progress-bar-track::before {
+.hud-progress-track::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent,
-    transparent calc(100% / 7 - 1px),
-    rgba(0,212,255,0.06) calc(100% / 7 - 1px),
-    rgba(0,212,255,0.06) calc(100% / 7)
-  );
+  background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/7 - 1px), rgba(0,212,255,0.04) calc(100%/7 - 1px), rgba(0,212,255,0.04) calc(100%/7));
 }
-.progress-bar-fill {
+.hud-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--cyan), var(--arc));
   border-radius: 100px;
   transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: 0 0 16px var(--arc-glow);
-  position: relative;
-  z-index: 1;
+  box-shadow: 0 0 10px var(--arc-glow);
+  position: relative; z-index: 1;
 }
-.progress-bar-labels {
+.hud-progress-labels {
   display: flex; justify-content: space-between;
-  margin-top: 8px;
-  font-size: 11px; color: rgba(255,255,255,0.35);
+  margin-top: 5px;
+  font-size: 9px; color: rgba(255,255,255,0.2);
+  letter-spacing: 0.5px;
 }
 
-/* ─── REMINDER CARD ─── */
-.reminder-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 18px 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
+/* ─── ACTION DOCK ─── */
+.action-dock {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  max-width: 320px;
+  width: 100%;
+  margin-left: auto; margin-right: auto;
+}
+.btn-primary {
+  flex: 1;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--arc), var(--blue));
+  color: #fff; border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0,212,255,0.2);
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-primary:hover { box-shadow: 0 0 28px var(--arc-glow); }
+.btn-primary:active { transform: scale(0.97); }
+.btn-secondary {
+  width: 44px;
+  background: transparent;
+  border: 1px solid rgba(0,212,255,0.08);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-secondary:hover { border-color: rgba(0,212,255,0.3); color: var(--arc); }
+.btn-secondary:active { transform: scale(0.93); }
+
+/* ─── AI COMMS ─── */
+.ai-comms {
+  border-top: 1px solid rgba(0,212,255,0.06);
+  padding-top: 12px;
+}
+.comms-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  position: relative;
+  gap: 8px;
+  padding: 6px 0;
 }
-
-.reminder-card::before {
-  content: '▦';
-  position: absolute;
-  top: 6px; left: 10px;
-  font-size: 6px;
-  color: rgba(0,212,255,0.15);
-  letter-spacing: 2px;
-}
-
-.reminder-card:hover { border-color: rgba(0, 212, 255, 0.25); box-shadow: 0 0 24px rgba(0,212,255,0.04); }
-
-.reminder-info p:first-child {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-}
-
-.reminder-time {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
+.comms-tag {
+  font-size: 9px;
   font-weight: 700;
-  color: var(--text-bright);
-  line-height: 1;
-}
-
-.reminder-countdown {
-  font-size: 12px;
-  color: var(--text-dim);
-  margin-top: 3px;
-}
-
-.toggle-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 12px 20px;
-  border-radius: 14px;
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s;
-  white-space: nowrap;
-}
-
-.toggle-btn.start {
-  background: linear-gradient(135deg, var(--arc), var(--blue));
-  color: #fff;
-  box-shadow: 0 0 20px var(--arc-glow);
-}
-
-.toggle-btn.stop {
-  background: rgba(0, 212, 255, 0.06);
   color: var(--arc);
-  border: 1px solid rgba(0, 212, 255, 0.2);
+  letter-spacing: 1.5px;
+  min-width: 32px;
 }
-
-.toggle-btn:active { transform: scale(0.95); }
-
-@keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 var(--arc-pulse); }
-  70% { box-shadow: 0 0 0 16px rgba(0, 212, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
-}
-.toggle-btn.start.active { animation: pulse-ring 2.5s infinite; }
-
-/* ─── GLASSES GRID ─── */
-.glasses-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-}
-.glasses-card::before {
-  content: '';
-  position: absolute;
-  top: -1px; left: 20px; right: 20px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.15), transparent);
-}
-.glasses-card:hover { border-color: rgba(0, 212, 255, 0.25); }
-
-.card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-.card-title {
+.comms-time {
   font-family: 'Playfair Display', serif;
   font-size: 18px;
   font-weight: 700;
   color: var(--text-bright);
-}
-
-.reset-btn {
-  background: none; border: none;
-  font-size: 12px; font-weight: 500;
-  color: var(--text-dim);
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  transition: color 0.2s;
-  display: flex; align-items: center; gap: 4px;
-}
-.reset-btn:hover { color: var(--arc); }
-
-.glasses-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.glass-item {
-  aspect-ratio: 1;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  position: relative;
-}
-
-.glass-item.empty {
-  background: transparent;
-  border: 2px solid rgba(0, 212, 255, 0.08);
-  color: rgba(148, 163, 184, 0.2);
-}
-
-.glass-item.empty::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 212, 255, 0.03);
-}
-
-.glass-item.full {
-  background: transparent;
-  border: 2px solid var(--arc);
-  color: var(--arc);
-  box-shadow: 0 0 16px var(--arc-glow), inset 0 0 16px rgba(0,212,255,0.06);
-}
-
-.glass-item.full::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  filter: blur(2px);
-}
-
-@keyframes nodeFill {
-  0% { border-color: rgba(0, 212, 255, 0.08); box-shadow: none; }
-  50% { transform: scale(1.12); }
-  100% { border-color: var(--arc); box-shadow: 0 0 16px var(--arc-glow); }
-}
-.glass-item.full.animate { animation: nodeFill 0.45s ease-out; }
-.glass-item.empty:hover { border-color: rgba(0, 212, 255, 0.25); }
-
-.glass-icon { font-size: 14px; line-height: 1; }
-.glass-label { font-size: 9px; font-weight: 700; margin-top: 2px; letter-spacing: 0.5px; }
-
-.drink-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--arc), var(--blue));
-  color: #fff;
-  border: none;
-  border-radius: 16px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 0 24px var(--arc-glow);
-  transition: all 0.2s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.drink-btn:hover { box-shadow: 0 0 32px var(--arc-pulse); }
-.drink-btn:active { transform: scale(0.97); }
-
-/* ─── STATS ROW ─── */
-.stats-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 16px 12px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-}
-.stat-card::before {
-  content: '[';
-  position: absolute;
-  top: 4px; left: 6px;
-  font-size: 10px;
-  color: rgba(0,212,255,0.15);
-  font-weight: 700;
-}
-.stat-card::after {
-  content: ']';
-  position: absolute;
-  bottom: 4px; right: 6px;
-  font-size: 10px;
-  color: rgba(0,212,255,0.15);
-  font-weight: 700;
-}
-.stat-card:hover { border-color: rgba(0, 212, 255, 0.25); }
-
-.stat-icon {
-  font-size: 20px;
-  margin-bottom: 6px;
-  display: block;
-}
-
-.stat-value {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-bright);
   line-height: 1;
 }
-
-.stat-label {
-  font-size: 10px;
-  color: var(--text-dim);
-  font-weight: 500;
-  margin-top: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-/* ─── FRIDAY CARD ─── */
-.friday-card {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.04), rgba(59, 130, 246, 0.02));
-  border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: 22px;
-  padding: 18px 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.friday-avatar {
-  width: 48px; height: 48px;
-  background: linear-gradient(135deg, var(--arc), var(--blue));
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-  box-shadow: 0 0 20px var(--arc-glow);
-}
-
-.friday-text p:first-child {
+.comms-delay {
   font-size: 11px;
-  font-weight: 600;
-  color: var(--arc);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+.comms-toggle {
+  width: 32px; height: 32px;
+  background: transparent;
+  border: 1px solid rgba(0,212,255,0.1);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.comms-toggle:hover { border-color: var(--arc); color: var(--arc); }
+.comms-toggle.active { border-color: var(--arc); color: var(--arc); }
+.comms-msg {
+  font-size: 12px;
+  color: var(--text);
+  font-style: italic;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.friday-message {
-  font-size: 13px;
-  color: var(--text);
-  margin-top: 3px;
-  line-height: 1.45;
-  font-style: italic;
-}
+/* ─── SETTINGS MODAL ─── */
 
 /* ─── SETTINGS MODAL ─── */
 .modal-overlay {
@@ -865,39 +622,10 @@ body::before {
   body { padding: 40px 32px; }
   .app { max-width: 720px; padding: 0 0 80px; }
 
-  .logo-icon { width: 56px; height: 56px; border-radius: 18px; font-size: 26px; }
-  .logo-text h1 { font-size: 26px; }
-  .logo-text p { font-size: 13px; }
-
-  .progress-card { padding: 32px; border-radius: 32px; }
-  .progress-count { font-size: 64px; }
-  .progress-count span { font-size: 34px; }
-  .progress-circle { width: 88px; height: 88px; }
-  .progress-circle svg { width: 88px; height: 88px; }
-  .progress-circle-text { font-size: 16px; }
-
-  .reminder-card { padding: 22px 28px; }
-  .reminder-time { font-size: 34px; }
-  .reminder-countdown { font-size: 13px; }
-
-  .glasses-card { padding: 28px; }
-  .glasses-grid { gap: 12px; }
-  .card-title { font-size: 20px; }
-  .glass-item { border-radius: 18px; }
-  .glass-icon { font-size: 24px; }
-  .glass-label { font-size: 10px; }
-
-  .stats-row { grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-  .stat-card { padding: 20px 16px; }
-  .stat-value { font-size: 26px; }
-  .stat-icon { font-size: 24px; }
-  .stat-label { font-size: 11px; }
-
-  .friday-card { padding: 22px 28px; }
-  .friday-text p:first-child { font-size: 12px; }
-  .friday-message { font-size: 14px; }
-
-  .drink-btn { padding: 18px; font-size: 16px; }
+  .reactor { width: 220px; height: 220px; }
+  .rc-count { font-size: 38px; }
+  .stat-val { font-size: 20px; }
+  .comms-time { font-size: 20px; }
 
   .modal-sheet { max-width: 520px; left: 50%; transform: translateX(-50%) translateY(100%); border-radius: 28px; }
   .modal-overlay.open .modal-sheet { transform: translateX(-50%) translateY(0); }
@@ -909,10 +637,8 @@ body::before {
 
 @media (min-width: 1024px) {
   .app { max-width: 800px; }
-  .glasses-grid { gap: 14px; }
-  .progress-count { font-size: 72px; }
-  .progress-circle { width: 96px; height: 96px; }
-  .progress-circle svg { width: 96px; height: 96px; }
+  .reactor { width: 240px; height: 240px; }
+  .rc-count { font-size: 40px; }
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -935,135 +661,95 @@ body::before {
     <button class="dismiss-install" id="dismiss-install">✕</button>
   </div>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="logo">
-      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;color:#fff;"><path d="M12 2C12 2 5 10 5 14a7 7 0 0 0 14 0c0-4-7-12-7-12z"/></svg></div>
-      <div class="logo-text">
-        <h1>HydroBuddy</h1>
-        <p>Hello, <span id="user-name-display">Farman</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;color:var(--arc);"><path d="M3 11c3-2 6-2 9 0s6 2 9 0"/><path d="M3 16c3-2 6-2 9 0s6 2 9 0"/></svg></p>
-      </div>
-    </div>
-    <button class="settings-btn" id="settings-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-  </div>
-
-  <!-- Progress Card -->
-  <div class="progress-card">
-    <div class="progress-top">
-      <div>
-        <p class="progress-label">Today's Intake</p>
-        <div class="progress-count">
-          <span id="glasses-drunk">0</span><span>/<span id="glasses-target">7</span></span>
-        </div>
-        <p class="progress-ml"><span id="ml-drunk">0</span>ml of <span id="ml-target">1750</span>ml</p>
-      </div>
-      <div class="progress-circle" id="arc-reactor">
-        <svg width="72" height="72" viewBox="0 0 100 100">
-          <defs>
-            <linearGradient id="arc-g" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#22d3ee"/>
-              <stop offset="100%" stop-color="#00d4ff"/>
-            </linearGradient>
-            <radialGradient id="core-g">
-              <stop offset="0%" stop-color="#fff"/>
-              <stop offset="40%" stop-color="#7dd3fc"/>
-              <stop offset="100%" stop-color="#00d4ff"/>
-            </radialGradient>
-            <filter id="arc-glow">
-              <feGaussianBlur stdDeviation="3" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-          <circle class="arc-outer" cx="50" cy="50" r="46" fill="none" stroke="rgba(0,212,255,0.06)" stroke-width="1" stroke-dasharray="3 5"/>
-          <circle class="arc-outer" cx="50" cy="50" r="46" fill="none" stroke="rgba(0,212,255,0.04)" stroke-width="1" stroke-dasharray="3 5" transform="rotate(180 50 50)"/>
-          <circle class="arc-track" cx="50" cy="50" r="38" fill="none" stroke="rgba(0,212,255,0.08)" stroke-width="8"/>
-          <circle class="arc-fill" id="circle-fill" cx="50" cy="50" r="38" fill="none" stroke="url(#arc-g)" stroke-width="8" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="238.8" filter="url(#arc-glow)"/>
-          <circle class="arc-inner-ring" cx="50" cy="50" r="28" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
-          <circle class="arc-inner-ring" cx="50" cy="50" r="20" fill="none" stroke="rgba(0,212,255,0.06)" stroke-width="1"/>
-          <circle class="arc-core" cx="50" cy="50" r="10" fill="url(#core-g)" filter="url(#arc-glow)"/>
-          <circle class="arc-core-dot" cx="50" cy="50" r="3" fill="#fff"/>
-        </svg>
-        <div class="progress-circle-text" id="progress-percent">0%</div>
-      </div>
-    </div>
-    <div class="progress-bar-wrap">
-      <div class="progress-bar-track">
-        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
-      </div>
-      <div class="progress-bar-labels">
-        <span>0ml</span>
-        <span id="ml-target-label">1750ml</span>
-      </div>
-    </div>
-    <div class="arc-scan"></div>
-  </div>
-
-  <!-- Reminder Card -->
-  <div class="reminder-card">
-    <div class="reminder-info">
-      <p>Next Reminder</p>
-      <div class="reminder-time" id="next-reminder-time">--:--</div>
-      <div class="reminder-countdown" id="next-reminder-countdown">Start reminders to begin</div>
-    </div>
-    <button class="toggle-btn start" id="toggle-reminders">
-      <span id="toggle-icon">▶</span>
-      <span id="toggle-label">Start</span>
+  <!-- HUD Header -->
+  <div class="hud-header">
+    <span class="hud-badge">SECTOR 7G</span>
+    <button class="hud-settings" id="settings-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </div>
 
-  <!-- Friday AI Card -->
-  <div class="friday-card">
-    <div class="friday-avatar">
-            <svg width="44" height="44" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="48" fill="#080c18"/>
-        <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(0,212,255,0.15)" stroke-width="1" stroke-dasharray="3 4"/>
-        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(0,212,255,0.08)" stroke-width="6"/>
-        <circle cx="50" cy="50" r="38" fill="none" stroke="var(--arc)" stroke-width="6" stroke-dasharray="238.8" stroke-dashoffset="80" stroke-linecap="round"/>
-        <circle cx="50" cy="50" r="22" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
-        <circle cx="50" cy="50" r="10" fill="url(#cg)"/>
-        <circle cx="50" cy="50" r="3.5" fill="#fff"/>
+  <!-- Reactor Zone — no card, full width -->
+  <div class="reactor-zone">
+    <div class="scan"></div>
+
+    <!-- Arc Reactor SVG -->
+    <div class="reactor" id="arc-reactor">
+      <svg width="100%" height="100%" viewBox="0 0 100 100">
         <defs>
-          <radialGradient id="cg"><stop offset="0%" stop-color="#fff"/><stop offset="40%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#00d4ff"/></radialGradient>
+          <linearGradient id="arc-g" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#00d4ff"/>
+          </linearGradient>
+          <radialGradient id="core-g">
+            <stop offset="0%" stop-color="#fff"/><stop offset="40%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#00d4ff"/>
+          </radialGradient>
+          <filter id="arc-glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
+        <circle class="arc-outer" cx="50" cy="50" r="46" fill="none" stroke="rgba(0,212,255,0.06)" stroke-width="1" stroke-dasharray="3 5"/>
+        <circle class="arc-outer" cx="50" cy="50" r="46" fill="none" stroke="rgba(0,212,255,0.04)" stroke-width="1" stroke-dasharray="3 5" transform="rotate(180 50 50)"/>
+        <circle class="arc-track" cx="50" cy="50" r="38" fill="none" stroke="rgba(0,212,255,0.06)" stroke-width="7"/>
+        <circle class="arc-fill" id="circle-fill" cx="50" cy="50" r="38" fill="none" stroke="url(#arc-g)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="238.8" filter="url(#arc-glow)"/>
+        <circle class="arc-inner-ring" cx="50" cy="50" r="30" fill="none" stroke="rgba(0,212,255,0.06)" stroke-width="1"/>
+        <circle class="arc-inner-ring" cx="50" cy="50" r="22" fill="none" stroke="rgba(0,212,255,0.04)" stroke-width="1"/>
+        <circle class="arc-core" cx="50" cy="50" r="10" fill="url(#core-g)" filter="url(#arc-glow)"/>
+        <circle class="arc-core-dot" cx="50" cy="50" r="3" fill="#fff"/>
+        <!-- Glass orbit dots — 7 on the ring -->
+        <circle class="gd gd0" cx="50.0" cy="12.0" r="5.5" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
+        <circle class="gd gd1" cx="79.7" cy="26.3" r="5.5" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
+        <circle class="gd gd2" cx="87.1" cy="58.5" r="5.5" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
+        <circle class="gd gd3" cx="66.5" cy="84.2" r="5.5" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
+        <circle class="gd gd4" cx="33.5" cy="84.2" r="5.5" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
+        <circle class="gd gd5" cx="12.9" cy="58.5" r="5.5" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
+        <circle class="gd gd6" cx="20.3" cy="26.3" r="5.5" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1.5"/>
       </svg>
     </div>
-    <div class="friday-text">
-      <p>Friday · AI Assistant</p>
-      <div class="friday-message" id="friday-message">
-        "Good to see you, Farman. Let's keep you sharp today — your body runs on water."
-      </div>
+
+    <!-- Center readout overlay on the reactor -->
+    <div class="reactor-center">
+      <div class="rc-count"><span id="glasses-drunk">0</span><span class="rc-slash">/</span><span id="glasses-target">7</span></div>
+      <div class="rc-label">GLASSES</div>
+      <div class="rc-ml"><span id="ml-drunk">0</span> / <span id="ml-target">1750</span> ml</div>
     </div>
   </div>
 
-  <!-- Glasses Grid -->
-  <div class="glasses-card">
-    <div class="card-header">
-      <div class="card-title">Tap to Log</div>
-      <button class="reset-btn" id="reset-day">↺ Reset</button>
-    </div>
-    <div class="glasses-grid" id="glasses-grid"></div>
-    <button class="drink-btn" id="add-glass">
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M12 2C12 2 5 10 5 14a7 7 0 0 0 14 0c0-4-7-12-7-12z"/></svg></span>
-      <span>Log a Glass</span>
-    </button>
+  <!-- Stat Grid — 4 columns under reactor -->
+  <div class="stat-grid">
+    <div class="stat-cell"><span class="stat-val" id="streak-count">0</span><span class="stat-lbl">STREAK</span></div>
+    <div class="stat-cell"><span class="stat-val" id="avg-time">--</span><span class="stat-lbl">AVG GAP</span></div>
+    <div class="stat-cell"><span class="stat-val" id="remaining-count">7</span><span class="stat-lbl">LEFT</span></div>
+    <div class="stat-cell"><span class="stat-val" id="progress-pct">0%</span><span class="stat-lbl">POWER</span></div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--arc);"><path d="M12 2C12 2 7 7 7 12a5 5 0 0 0 10 0c0-5-5-10-5-10z"/><path d="M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M12 22c-2 0-4-1-4-3s4-5 4-5 4 3 4 5-2 3-4 3z"/></svg></span>
-      <div class="stat-value" id="streak-count">0</div>
-      <div class="stat-label">Day Streak</div>
+  <!-- HUD Progress Bar -->
+  <div class="hud-progress">
+    <div class="hud-progress-track">
+      <div class="hud-progress-fill" id="progress-bar" style="width:0%"></div>
     </div>
-    <div class="stat-card">
-      <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--arc);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-      <div class="stat-value" id="avg-time">--</div>
-      <div class="stat-label">Avg Gap</div>
+    <div class="hud-progress-labels">
+      <span>0ml</span>
+      <span id="ml-target-label">1750ml</span>
     </div>
-    <div class="stat-card">
-      <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--arc);"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
-      <div class="stat-value" id="remaining-count">7</div>
-      <div class="stat-label">Remaining</div>
+  </div>
+
+  <!-- Action Dock -->
+  <div class="action-dock">
+    <button class="btn-primary" id="add-glass">+ LOG GLASS</button>
+    <button class="btn-secondary" id="reset-day">↺</button>
+  </div>
+
+  <!-- AI Comms (merged reminder + Friday) -->
+  <div class="ai-comms">
+    <div class="comms-row">
+      <span class="comms-tag">NEXT</span>
+      <span class="comms-time" id="next-reminder-time">--:--</span>
+      <span class="comms-delay" id="next-reminder-countdown">Start reminders</span>
+      <button class="comms-toggle" id="toggle-reminders">
+        <span id="toggle-icon">▶</span>
+      </button>
+    </div>
+    <div class="comms-row">
+      <span class="comms-tag">AI</span>
+      <span class="comms-msg" id="friday-message">"Your body runs on water, Boss."</span>
     </div>
   </div>
 
@@ -1571,16 +1257,13 @@ function updateCountdown() {
 function updateReminderUI() {
   const btn = document.getElementById('toggle-reminders');
   const icon = document.getElementById('toggle-icon');
-  const label = document.getElementById('toggle-label');
 
   if (state.remindersActive) {
-    btn.className = 'toggle-btn stop';
+    btn.classList.add('active');
     icon.textContent = '⏸';
-    label.textContent = 'Pause';
   } else {
-    btn.className = 'toggle-btn start';
+    btn.classList.remove('active');
     icon.textContent = '▶';
-    label.textContent = 'Start';
   }
 
   if (state.nextReminderTimestamp) {
@@ -1604,7 +1287,7 @@ function drinkGlass() {
   state.glassesDrunk++;
   state.logTimes.push(new Date().toISOString());
   saveState();
-  renderGlasses();
+  renderOrbit();
   updateProgressUI();
 
   if (state.glassesDrunk === state.targetGlasses) {
@@ -1625,7 +1308,7 @@ function resetDay() {
   state.glassesDrunk = 0;
   state.logTimes = [];
   saveState();
-  renderGlasses();
+  renderOrbit();
   updateProgressUI();
   updateFriday(getFridayPhrase('idle'));
   showToast('Reset done', 'info');
@@ -1634,20 +1317,12 @@ function resetDay() {
 // ═══════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════
-function renderGlasses() {
-  const grid = document.getElementById('glasses-grid');
-  grid.innerHTML = '';
-  for (let i = 0; i < state.targetGlasses; i++) {
+function renderOrbit() {
+  for (let i = 0; i < 7; i++) {
+    const dot = document.querySelector(`.gd${i}`);
+    if (!dot) continue;
     const full = i < state.glassesDrunk;
-    const btn = document.createElement('button');
-    btn.className = `glass-item ${full ? 'full' : 'empty'}`;
-    if (full && i === state.glassesDrunk - 1) btn.classList.add('animate');
-    const icon = full
-      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M12 2C12 2 5 10 5 14a7 7 0 0 0 14 0c0-4-7-12-7-12z"/></svg>`
-      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;opacity:0.5;"><path d="M6 2l2 16.5a2 2 0 0 0 2 1.5h4a2 2 0 0 0 2-1.5L18 2"/><path d="M5 6h14"/></svg>`;
-    btn.innerHTML = `<span class="glass-icon">${icon}</span><span class="glass-label">${full ? '✓' : i + 1}</span>`;
-    btn.onclick = () => { if (i === state.glassesDrunk) drinkGlass(); };
-    grid.appendChild(btn);
+    dot.classList.toggle('active', full);
   }
 }
 
@@ -1661,8 +1336,9 @@ function updateProgressUI() {
   document.getElementById('ml-drunk').textContent = ml;
   document.getElementById('ml-target').textContent = mlTotal;
   document.getElementById('ml-target-label').textContent = mlTotal + 'ml';
-  document.getElementById('progress-percent').textContent = pct + '%';
+
   document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
 
   // Circle
   const circ = 238.8;
@@ -1739,7 +1415,7 @@ function saveSettings() {
   state.endHour = document.getElementById('end-hour').value;
   state.selectedVoice = document.getElementById('voice-select').value;
   saveState();
-  renderGlasses();
+  renderOrbit();
   updateProgressUI();
   document.getElementById('settings-modal').classList.remove('open');
   showToast('Settings saved', 'success');
@@ -1830,7 +1506,7 @@ function importData() {
         Object.keys(data).forEach(key => localStorage.setItem(key, JSON.stringify(data[key])));
         loadState();
         applyStateToUI();
-        renderGlasses();
+        renderOrbit();
         updateProgressUI();
         updateReminderUI();
         document.getElementById('data-status').textContent = 'Data imported. Settings applied.';
@@ -1932,7 +1608,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadState();
   applyStateToUI();
   initVoices();
-  renderGlasses();
+  renderOrbit();
   updateProgressUI();
   updateReminderUI();
   updateFriday(getTimeOfDayPhrase());
