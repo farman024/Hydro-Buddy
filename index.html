@@ -1455,15 +1455,13 @@ function fridayTalk(phrase) {
     clearTimeout(el._talkTimer);
     el._talkTimer = setTimeout(() => el.classList.remove('speaking'), 3500);
   }
-  // Avatar glow
+  // Avatar glow only
   const avatar = document.querySelector('.friday-avatar');
   if (avatar) {
     avatar.classList.add('speaking');
     setTimeout(() => avatar.classList.remove('speaking'), 1200);
   }
-  // Typewriter effect on message
-  typewriter(document.getElementById('friday-message'), `"${phrase}"`, 25);
-  // Speak directly within user gesture — no cancel/delay/queue (mobile autoplay policy)
+  // Speak directly within user gesture
   try {
     if (window.speechSynthesis) {
       const u = new SpeechSynthesisUtterance(phrase);
@@ -1575,19 +1573,6 @@ function updateProgressUI() {
 
   const nameEl = el('user-name-display');
   if (nameEl) nameEl.textContent = state.userName;
-}
-
-function typewriter(el, text, speed) {
-  if (!el) return;
-  el.textContent = '';
-  let i = 0;
-  const next = () => {
-    if (i < text.length) {
-      el.textContent += text[i++];
-      setTimeout(next, speed);
-    }
-  };
-  next();
 }
 
 function updateFriday(msg) {
