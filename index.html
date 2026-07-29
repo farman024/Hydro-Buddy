@@ -1190,7 +1190,7 @@ function speak(text) {
 
         const utterance = new SpeechSynthesisUtterance(text);
         const voice = state.selectedVoice
-          ? speechSynthesis.getVoices().find(v => v.name === state.selectedVoice) || _femaleVoice || getFemaleVoice()
+          ? window.speechSynthesis.getVoices().find(v => v.name === state.selectedVoice) || _femaleVoice || getFemaleVoice()
           : _femaleVoice || getFemaleVoice();
         if (voice) utterance.voice = voice;
         utterance.volume = 1;
