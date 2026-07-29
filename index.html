@@ -1190,9 +1190,13 @@ function speak(text) {
           window.speechSynthesis.cancel();
 
           const utterance = new SpeechSynthesisUtterance(text);
-          const voice = state.selectedVoice
-            ? window.speechSynthesis.getVoices().find(v => v.name === state.selectedVoice) || _femaleVoice || getFemaleVoice()
-            : _femaleVoice || getFemaleVoice();
+          let voice = null;
+          // Try user-selected voice first
+          if (state.selectedVoice) {
+            voice = window.speechSynthesis.getVoices().find(v => v.name === state.selectedVoice);
+          }
+          // Fall back to fresh female voice detection
+          if (!voice) voice = getFemaleVoice();
           if (voice) utterance.voice = voice;
           utterance.volume = 1;
           utterance.rate = state.rate * 1.0;
