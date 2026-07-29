@@ -1179,34 +1179,36 @@ function speak(text) {
     _speechQueue = _speechQueue.then(() => new Promise(resolve => {
       // Load voices if needed
       const loadVoices = (attempt) => {
-        if (attempt > 10) { resolve(); return; }
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length === 0) {
-          window.speechSynthesis.onvoiceschanged = () => loadVoices(attempt + 1);
-          return;
-        }
+        try {
+          if (attempt > 10) { resolve(); return; }
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            window.speechSynthesis.onvoiceschanged = () => loadVoices(attempt + 1);
+            return;
+          }
 
-        window.speechSynthesis.cancel();
+          window.speechSynthesis.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(text);
-        const voice = state.selectedVoice
-          ? window.speechSynthesis.getVoices().find(v => v.name === state.selectedVoice) || _femaleVoice || getFemaleVoice()
-          : _femaleVoice || getFemaleVoice();
-        if (voice) utterance.voice = voice;
-        utterance.volume = 1;
-        utterance.rate = state.rate * 1.0;
-        utterance.pitch = state.pitch * 1.0;
+          const utterance = new SpeechSynthesisUtterance(text);
+          const voice = state.selectedVoice
+            ? window.speechSynthesis.getVoices().find(v => v.name === state.selectedVoice) || _femaleVoice || getFemaleVoice()
+            : _femaleVoice || getFemaleVoice();
+          if (voice) utterance.voice = voice;
+          utterance.volume = 1;
+          utterance.rate = state.rate * 1.0;
+          utterance.pitch = state.pitch * 1.0;
 
-        utterance.onend = resolve;
-        utterance.onerror = resolve;
+          utterance.onend = resolve;
+          utterance.onerror = resolve;
 
-        // Small delay to let cancel() settle (Chrome workaround)
-        setTimeout(() => {
-          try { window.speechSynthesis.speak(utterance); } catch(e) { resolve(); }
-        }, 50);
+          // Small delay to let cancel() settle (Chrome workaround)
+          setTimeout(() => {
+            try { window.speechSynthesis.speak(utterance); } catch(e) { resolve(); }
+          }, 50);
+        } catch(e) { resolve(); }
       };
       loadVoices(0);
-    }));
+    })).catch(() => {}); // keep chain alive on error
   } catch(e) {
     // Silent fallback for browser restrictions
   }
