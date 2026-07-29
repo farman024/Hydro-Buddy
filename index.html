@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HydroBuddy">
-<link rel="manifest" id="manifest-link">
+<link rel="manifest" href="manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap">
@@ -1524,28 +1524,38 @@ function updateProgressUI() {
   // Circle
   const circ = 238.8;
   const offset = circ - (circ * pct / 100);
-  document.getElementById('circle-fill').style.strokeDashoffset = offset;
+  const $ = id => document.getElementById(id);
+  const el = id => { const e = $(id); if (!e) console.warn('Missing element:', id); return e; };
+
+  const circleFill = el('circle-fill');
+  if (circleFill) circleFill.style.strokeDashoffset = offset;
 
   // Stats
-  document.getElementById('remaining-count').textContent = Math.max(0, state.targetGlasses - state.glassesDrunk);
-  document.getElementById('streak-count').textContent = state.streak;
+  const remaining = el('remaining-count');
+  if (remaining) remaining.textContent = Math.max(0, state.targetGlasses - state.glassesDrunk);
+  const streak = el('streak-count');
+  if (streak) streak.textContent = state.streak;
 
   // Avg gap
-  if (state.logTimes.length >= 2) {
-    const gaps = [];
-    for (let i = 1; i < state.logTimes.length; i++) {
-      gaps.push(new Date(state.logTimes[i]) - new Date(state.logTimes[i - 1]));
+  const avgEl = el('avg-time');
+  if (avgEl) {
+    if (state.logTimes.length >= 2) {
+      const gaps = [];
+      for (let i = 1; i < state.logTimes.length; i++) {
+        gaps.push(new Date(state.logTimes[i]) - new Date(state.logTimes[i - 1]));
+      }
+      const avgMs = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      const avgMin = Math.round(avgMs / 60000);
+      avgEl.textContent = avgMin >= 60
+        ? Math.round(avgMin / 60) + 'h'
+        : avgMin + 'm';
+    } else {
+      avgEl.textContent = '--';
     }
-    const avgMs = gaps.reduce((a, b) => a + b, 0) / gaps.length;
-    const avgMin = Math.round(avgMs / 60000);
-    document.getElementById('avg-time').textContent = avgMin >= 60
-      ? Math.round(avgMin / 60) + 'h'
-      : avgMin + 'm';
-  } else {
-    document.getElementById('avg-time').textContent = '--';
   }
 
-  document.getElementById('user-name-display').textContent = state.userName;
+  const nameEl = el('user-name-display');
+  if (nameEl) nameEl.textContent = state.userName;
 }
 
 function updateFriday(msg) {
@@ -1720,60 +1730,13 @@ function showToast(msg, type = 'info') {
 }
 
 // ═══════════════════════════════════════════
-// PWA — INLINE MANIFEST + SERVICE WORKER
+// SERVICE WORKER
 // ═══════════════════════════════════════════
-
-// Inline Web App Manifest
-(function() {
-  const m = {
-    name: 'HydroBuddy',
-    short_name: 'HydroBuddy',
-    description: 'Your personal AI hydration assistant',
-    start_url: './',
-    display: 'standalone',
-    background_color: '#080c18',
-    theme_color: '#00d4ff',
-    orientation: 'portrait-primary',
-    icons: [
-      { src: 'icon.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(m)], { type: 'application/json' });
-  document.getElementById('manifest-link').href = URL.createObjectURL(blob);
-})();
-
-// Inline Service Worker
-(function() {
-  const swCode = `
-    const CACHE = 'hydrobuddy-v1';
-    const URLS = ['/'];
-    self.addEventListener('install', e => {
-      e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)));
-      self.skipWaiting();
-    });
-    self.addEventListener('activate', e => {
-      e.waitUntil(
-        caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      );
-      self.clients.claim();
-    });
-    self.addEventListener('fetch', e => {
-      if (e.request.url.includes('supabase') || e.request.url.includes('googleapis')) {
-        return fetch(e.request);
-      }
-      e.respondWith(
-        caches.match(e.request).then(r => r || fetch(e.request).catch(() => new Response('Offline', { status: 503 })))
-      );
-    });
-  `;
-  const swBlob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(swBlob);
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register(swUrl).then(reg => {
-      console.log('SW registered');
-    }).catch(err => console.log('SW error:', err));
-  }
-})();
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    console.log('SW registered');
+  }).catch(err => console.log('SW error:', err));
+}
 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
