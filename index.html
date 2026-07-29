@@ -623,9 +623,14 @@ body::before {
   margin: 4px 0 14px;
 }
 .friday-side {
-  display: none;
+  display: block;
+  position: fixed;
+  right: 12px;
+  bottom: 80px;
+  width: 120px;
+  z-index: 0;
+  pointer-events: none;
   transition: filter 0.3s;
-  position: relative;
 }
 .friday-side.speaking {
   filter: drop-shadow(0 0 40px var(--arc-glow)) brightness(1.3);
@@ -633,9 +638,18 @@ body::before {
 .friday-side img {
   width: 100%;
   height: auto;
-  max-height: 90vh;
   display: block;
   object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .friday-side {
+    right: 24px;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    width: 280px;
+  }
 }
 .divider-line { flex: 1; height: 1px; background: rgba(0, 212, 255, 0.1); }
 .divider-text { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
@@ -683,25 +697,12 @@ body::before {
   .hud-header { margin-bottom: 28px; }
 }
 
-@media (min-width: 768px) {
-  .friday-side {
-    display: block;
-    position: fixed;
-    right: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 280px;
-    z-index: 0;
-    pointer-events: none;
-  }
-}
-
 @media (min-width: 1024px) {
-  .friday-side { width: 360px; right: 32px; }
+  .friday-side { width: 360px; }
 }
 
 @media (min-width: 1600px) {
-  .friday-side { width: 480px; right: 48px; }
+  .friday-side { width: 480px; }
 }
 
 ::-webkit-scrollbar { width: 6px; }
