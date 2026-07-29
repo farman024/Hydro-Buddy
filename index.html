@@ -1450,8 +1450,16 @@ function fridayTalk(phrase) {
     clearTimeout(el._talkTimer);
     el._talkTimer = setTimeout(() => el.classList.remove('speaking'), 3500);
   }
-  // Route through speak() to respect selectedVoice, rate, pitch, and queue
-  speak(phrase);
+  // Speak directly within user gesture — no cancel/delay/queue (mobile autoplay policy)
+  try {
+    if (window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance(phrase);
+      u.volume = 1;
+      u.rate = state.rate || 0.9;
+      u.pitch = state.pitch || 1.1;
+      window.speechSynthesis.speak(u);
+    }
+  } catch(e) {}
 }
 
 function drinkGlass() {
