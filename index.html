@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HydroBuddy">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" id="manifest-link">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap">
@@ -590,7 +590,7 @@ body::before {
 }
 
 .toast {
-  background: var(--ink);
+  background: #0a1028;
   color: white;
   border-radius: 14px;
   padding: 14px 18px;
@@ -840,6 +840,7 @@ body::before {
       <span class="comms-delay" id="next-reminder-countdown">Start reminders</span>
       <button class="comms-toggle" id="toggle-reminders">
         <span id="toggle-icon">▶</span>
+        <span id="toggle-label">Start</span>
       </button>
     </div>
     <div class="comms-row">
@@ -1186,11 +1187,13 @@ function speak(text) {
         window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(text);
-        const voice = _femaleVoice || getFemaleVoice();
+        const voice = state.selectedVoice
+          ? speechSynthesis.getVoices().find(v => v.name === state.selectedVoice) || _femaleVoice || getFemaleVoice()
+          : _femaleVoice || getFemaleVoice();
         if (voice) utterance.voice = voice;
         utterance.volume = 1;
-        utterance.rate = 0.9;
-        utterance.pitch = 1.2;
+        utterance.rate = state.rate * 1.0;
+        utterance.pitch = state.pitch * 1.0;
 
         utterance.onend = resolve;
         utterance.onerror = resolve;
@@ -1215,6 +1218,20 @@ function initVoices() {
     if (voices.length > 0) {
       // Store female voice for reuse
       _femaleVoice = getFemaleVoice();
+
+      // Populate voice dropdown with English voices
+      const select = document.getElementById('voice-select');
+      select.innerHTML = '';
+      const enVoices = voices.filter(v => v.lang && v.lang.startsWith('en'));
+      (enVoices.length ? enVoices : voices).forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang})`;
+        if (state.selectedVoice === v.name) opt.selected = true;
+        if (!state.selectedVoice && v.name === _femaleVoice?.name) opt.selected = true;
+        select.appendChild(opt);
+      });
+
       if (_femaleVoice) {
         console.log('👩 Female voice found:', _femaleVoice.name);
       }
@@ -1389,13 +1406,16 @@ function updateCountdown() {
 function updateReminderUI() {
   const btn = document.getElementById('toggle-reminders');
   const icon = document.getElementById('toggle-icon');
+  const label = document.getElementById('toggle-label');
 
   if (state.remindersActive) {
     btn.classList.add('active');
     icon.textContent = '⏸';
+    label.textContent = 'Pause';
   } else {
     btn.classList.remove('active');
     icon.textContent = '▶';
+    label.textContent = 'Start';
   }
 
   if (state.nextReminderTimestamp) {
@@ -1691,8 +1711,61 @@ function showToast(msg, type = 'info') {
 }
 
 // ═══════════════════════════════════════════
-// PWA INSTALL
+// PWA — INLINE MANIFEST + SERVICE WORKER
 // ═══════════════════════════════════════════
+
+// Inline Web App Manifest
+(function() {
+  const m = {
+    name: 'HydroBuddy',
+    short_name: 'HydroBuddy',
+    description: 'Your personal AI hydration assistant',
+    start_url: './',
+    display: 'standalone',
+    background_color: '#080c18',
+    theme_color: '#00d4ff',
+    orientation: 'portrait-primary',
+    icons: [
+      { src: 'icon.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(m)], { type: 'application/json' });
+  document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+})();
+
+// Inline Service Worker
+(function() {
+  const swCode = `
+    const CACHE = 'hydrobuddy-v1';
+    const URLS = ['/'];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      );
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      if (e.request.url.includes('supabase') || e.request.url.includes('googleapis')) {
+        return fetch(e.request);
+      }
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).catch(() => new Response('Offline', { status: 503 })))
+      );
+    });
+  `;
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(swBlob);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(swUrl).then(reg => {
+      console.log('SW registered');
+    }).catch(err => console.log('SW error:', err));
+  }
+})();
+
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
@@ -1715,14 +1788,7 @@ document.getElementById('dismiss-install').onclick = () => {
   localStorage.setItem('installDismissed', '1');
 };
 
-// ═══════════════════════════════════════════
-// SERVICE WORKER
-// ═══════════════════════════════════════════
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
-    console.log('SW registered');
-  }).catch(err => console.log('SW error:', err));
-}
+// SERVICE WORKER removed — inlined above
 
 // ═══════════════════════════════════════════
 // EVENT LISTENERS
