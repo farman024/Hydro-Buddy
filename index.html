@@ -375,16 +375,6 @@ body::before {
   filter: drop-shadow(0 0 12px var(--arc-glow)) brightness(1.3);
   box-shadow: 0 0 20px var(--arc-glow);
 }
-#friday-message {
-  transition: opacity 0.25s ease;
-}
-#friday-message.animate {
-  animation: msgPop 0.35s ease;
-}
-@keyframes msgPop {
-  0% { opacity: 0; transform: translateY(6px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
 .comms-msg {
   font-size: 12px;
   color: var(--text);
@@ -1465,18 +1455,14 @@ function fridayTalk(phrase) {
     clearTimeout(el._talkTimer);
     el._talkTimer = setTimeout(() => el.classList.remove('speaking'), 3500);
   }
-  // Animate avatar glow + message pop
+  // Avatar glow
   const avatar = document.querySelector('.friday-avatar');
   if (avatar) {
     avatar.classList.add('speaking');
     setTimeout(() => avatar.classList.remove('speaking'), 1200);
   }
-  const msgEl = document.getElementById('friday-message');
-  if (msgEl) {
-    msgEl.classList.remove('animate');
-    void msgEl.offsetWidth; // force reflow to restart animation
-    msgEl.classList.add('animate');
-  }
+  // Typewriter effect on message
+  typewriter(document.getElementById('friday-message'), `"${phrase}"`, 25);
   // Speak directly within user gesture — no cancel/delay/queue (mobile autoplay policy)
   try {
     if (window.speechSynthesis) {
@@ -1589,6 +1575,19 @@ function updateProgressUI() {
 
   const nameEl = el('user-name-display');
   if (nameEl) nameEl.textContent = state.userName;
+}
+
+function typewriter(el, text, speed) {
+  if (!el) return;
+  el.textContent = '';
+  let i = 0;
+  const next = () => {
+    if (i < text.length) {
+      el.textContent += text[i++];
+      setTimeout(next, speed);
+    }
+  };
+  next();
 }
 
 function updateFriday(msg) {
