@@ -1,4 +1,4 @@
-const CACHE = 'hydro-buddy-v2';
+const CACHE = 'hydro-buddy-v3';
 const URLS = ['/', '/index.html', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', e => {
