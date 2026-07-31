@@ -2066,7 +2066,7 @@ function showToast(msg, type = 'info') {
 // SERVICE WORKER
 // ═══════════════════════════════════════════
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=5').then(reg => {
+  navigator.serviceWorker.register('sw.js?v=6').then(reg => {
     console.log('SW registered');
   }).catch(err => console.log('SW error:', err));
 }
