@@ -630,8 +630,39 @@ body::before {
   bottom: 80px;
   width: 120px;
   z-index: 0;
-  pointer-events: none;
+  pointer-events: auto;
   transition: filter 0.3s;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.friday-side.dragging {
+  cursor: grabbing;
+  filter: drop-shadow(0 0 40px var(--arc-glow)) brightness(1.4);
+  z-index: 5;
+}
+.friday-side:hover .friday-hint {
+  opacity: 1;
+}
+.friday-hint {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: var(--arc);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  font-family: 'Share Tech Mono', monospace;
 }
 .friday-side.speaking {
   filter: drop-shadow(0 0 40px var(--arc-glow)) brightness(1.3);
@@ -840,7 +871,8 @@ body::before {
   </div>
 </div>
 
-<div class="friday-side">
+<div class="friday-side" id="friday-side">
+  <span class="friday-hint">DRAG TO MOVE · DOUBLE-CLICK TO RESET</span>
   <img src="friday.png" alt="Friday">
 </div>
 
@@ -1015,7 +1047,8 @@ const state = {
   nextReminderTimestamp: null,
   streak: 0,
   logTimes: [],
-  lastDate: null
+  lastDate: null,
+  fridayPos: null
 };
 
 let reminderTimer = null;
@@ -1780,6 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateReminderUI();
   updateFriday(getTimeOfDayPhrase());
   checkNotificationPermission();
+  initFridayDrag();
 
   if (state.remindersActive) {
     // Re-arm reminders after page reload
@@ -1808,6 +1842,101 @@ document.addEventListener('visibilitychange', () => {
     }
   }
 });
+
+// ═══════════════════════════════════════════
+// FRIDAY DRAG-TO-REPOSITION
+// ═══════════════════════════════════════════
+function initFridayDrag() {
+  const el = document.getElementById('friday-side');
+  if (!el) return;
+
+  const FRIDAY_POS_KEY = 'hydroBuddy_fridayPos';
+  const saved = localStorage.getItem(FRIDAY_POS_KEY);
+
+  if (saved) {
+    try {
+      const p = JSON.parse(saved);
+      applyFridayPos(p.x, p.y);
+    } catch(e) {}
+  }
+
+  let dragging = false;
+  let startX = 0, startY = 0, origX = 0, origY = 0;
+
+  function onStart(e) {
+    e.preventDefault();
+    dragging = true;
+    el.classList.add('dragging');
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = el.getBoundingClientRect();
+    startX = clientX; startY = clientY;
+    origX = rect.left; origY = rect.top;
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    let nx = origX + (clientX - startX);
+    let ny = origY + (clientY - startY);
+
+    // clamp to viewport
+    const w = el.offsetWidth, h = el.offsetHeight;
+    nx = Math.min(Math.max(nx, 0), window.innerWidth - w);
+    ny = Math.min(Math.max(ny, 0), window.innerHeight - h);
+
+    applyFridayPos(nx, ny);
+  }
+
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    const rect = el.getBoundingClientRect();
+    const p = { x: Math.round(rect.left), y: Math.round(rect.top) };
+    localStorage.setItem(FRIDAY_POS_KEY, JSON.stringify(p));
+    showToast('Friday repositioned. Double-click to reset.');
+  }
+
+  el.addEventListener('mousedown', onStart);
+  el.addEventListener('mousemove', onMove);
+  el.addEventListener('mouseup', onEnd);
+  el.addEventListener('mouseleave', onEnd);
+  el.addEventListener('touchstart', onStart, { passive: false });
+  el.addEventListener('touchmove', onMove, { passive: false });
+  el.addEventListener('touchend', onEnd);
+
+  el.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    localStorage.removeItem(FRIDAY_POS_KEY);
+    state.fridayPos = null;
+    resetFridayPos();
+    showToast('Friday reset to default position.');
+  });
+}
+
+function applyFridayPos(x, y) {
+  const el = document.getElementById('friday-side');
+  if (!el) return;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.right = 'auto';
+  el.style.bottom = 'auto';
+  el.style.transform = 'none';
+  state.fridayPos = { x, y };
+}
+
+function resetFridayPos() {
+  const el = document.getElementById('friday-side');
+  if (!el) return;
+  el.style.left = '';
+  el.style.top = '';
+  el.style.right = '';
+  el.style.bottom = '';
+  el.style.transform = '';
+}
 </script>
 </body>
 </html>
