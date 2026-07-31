@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HydroBuddy">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap">
@@ -2064,7 +2066,7 @@ function showToast(msg, type = 'info') {
 // SERVICE WORKER
 // ═══════════════════════════════════════════
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=2').then(reg => {
+  navigator.serviceWorker.register('sw.js?v=4').then(reg => {
     console.log('SW registered');
   }).catch(err => console.log('SW error:', err));
 }

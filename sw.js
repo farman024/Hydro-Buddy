@@ -1,5 +1,5 @@
-const CACHE = 'hydro-buddy-v3';
-const URLS = ['/', '/index.html', '/manifest.json', '/icon.svg'];
+const CACHE = 'hydro-buddy-v4';
+const URLS = ['/', '/index.html', '/manifest.json', '/logo.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)));
@@ -27,8 +27,8 @@ self.addEventListener('message', e => {
     setTimeout(() => {
       self.registration.showNotification(e.data.title, {
         body: e.data.body,
-        icon: '/icon.svg',
-        badge: '/icon.svg',
+        icon: '/logo.png',
+        badge: '/logo.png',
         tag: 'hydro-buddy',
         renotify: true,
         vibrate: [200, 100, 200]

@@ -2,6 +2,10 @@
 
 > *"Staying hydrated is not optional. Friday won't let you forget."*
 
+<p align="center">
+  <img src="logo.png" alt="Hydro Buddy — Your AI Hydration Assistant" width="220">
+</p>
+
 **Live App →** https://farman024.github.io/Hydro-Buddy/
 
 ---
