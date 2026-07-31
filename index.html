@@ -629,7 +629,7 @@ body::before {
   right: 12px;
   bottom: 80px;
   width: 120px;
-  z-index: 0;
+  z-index: 50;
   pointer-events: auto;
   transition: filter 0.3s;
   cursor: grab;
@@ -640,7 +640,7 @@ body::before {
 .friday-side.dragging {
   cursor: grabbing;
   filter: drop-shadow(0 0 40px var(--arc-glow)) brightness(1.4);
-  z-index: 5;
+  z-index: 200;
 }
 .friday-side:hover .friday-hint {
   opacity: 1;
@@ -672,6 +672,8 @@ body::before {
   height: auto;
   display: block;
   object-fit: contain;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 @media (min-width: 768px) {
@@ -873,7 +875,7 @@ body::before {
 
 <div class="friday-side" id="friday-side">
   <span class="friday-hint">DRAG TO MOVE · DOUBLE-CLICK TO RESET</span>
-  <img src="friday.png" alt="Friday">
+  <img src="friday.png" alt="Friday" draggable="false">
 </div>
 
 <!-- Toast Container -->
@@ -1863,24 +1865,21 @@ function initFridayDrag() {
   let dragging = false;
   let startX = 0, startY = 0, origX = 0, origY = 0;
 
-  function onStart(e) {
+  function onPointerDown(e) {
     e.preventDefault();
     dragging = true;
     el.classList.add('dragging');
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const rect = el.getBoundingClientRect();
-    startX = clientX; startY = clientY;
+    startX = e.clientX; startY = e.clientY;
     origX = rect.left; origY = rect.top;
+    try { el.setPointerCapture(e.pointerId); } catch(err) {}
   }
 
-  function onMove(e) {
+  function onPointerMove(e) {
     if (!dragging) return;
     e.preventDefault();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    let nx = origX + (clientX - startX);
-    let ny = origY + (clientY - startY);
+    let nx = origX + (e.clientX - startX);
+    let ny = origY + (e.clientY - startY);
 
     // clamp to viewport
     const w = el.offsetWidth, h = el.offsetHeight;
@@ -1890,7 +1889,7 @@ function initFridayDrag() {
     applyFridayPos(nx, ny);
   }
 
-  function onEnd() {
+  function onPointerEnd(e) {
     if (!dragging) return;
     dragging = false;
     el.classList.remove('dragging');
@@ -1900,13 +1899,11 @@ function initFridayDrag() {
     showToast('Friday repositioned. Double-click to reset.');
   }
 
-  el.addEventListener('mousedown', onStart);
-  el.addEventListener('mousemove', onMove);
-  el.addEventListener('mouseup', onEnd);
-  el.addEventListener('mouseleave', onEnd);
-  el.addEventListener('touchstart', onStart, { passive: false });
-  el.addEventListener('touchmove', onMove, { passive: false });
-  el.addEventListener('touchend', onEnd);
+  el.addEventListener('pointerdown', onPointerDown);
+  el.addEventListener('pointermove', onPointerMove);
+  el.addEventListener('pointerup', onPointerEnd);
+  el.addEventListener('pointercancel', onPointerEnd);
+  el.addEventListener('dragstart', e => e.preventDefault());
 
   el.addEventListener('dblclick', (e) => {
     e.preventDefault();
