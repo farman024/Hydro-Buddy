@@ -9,27 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HydroBuddy">
-<link rel="manifest" id="manifest-link">
-<script>
-(function(){
-  const manifest = {
-    name: "HydroBuddy — Stay Sharp, Stay Hydrated",
-    short_name: "HydroBuddy",
-    description: "Your personal AI hydration assistant with Friday-style voice reminders",
-    start_url: "/",
-    display: "standalone",
-    background_color: "#080c18",
-    theme_color: "#00d4ff",
-    orientation: "portrait",
-    icons: [
-      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%2300d4ff'/><text y='140' x='96' text-anchor='middle' font-size='120'>💧</text></svg>", sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
-      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2300d4ff'/><text y='380' x='256' text-anchor='middle' font-size='320'>💧</text></svg>", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
-  document.getElementById('manifest-link').href = URL.createObjectURL(blob);
-})();
-</script>
+<link rel="manifest" href="manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap">
@@ -114,6 +94,7 @@ body::before {
   letter-spacing: 2px;
 }
 .hud-badge::before { content: '◤ '; color: var(--arc); }
+#user-name-display { font-size: 10px; font-weight: 600; color: var(--text-dim); letter-spacing: 2px; margin-left: 8px; }
 .hud-badge::after { content: ' ◢'; color: var(--arc); }
 .hud-settings {
   width: 36px; height: 36px;
@@ -368,16 +349,18 @@ body::before {
   margin-left: auto;
 }
 .comms-toggle {
-  width: 32px; height: 32px;
+  padding: 6px 14px;
   background: transparent;
   border: 1px solid rgba(0,212,255,0.1);
   border-radius: 8px;
   color: var(--text-dim);
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
 }
+.comms-toggle #toggle-label { font-size: 12px; font-weight: 500; letter-spacing: 0.5px; }
 .comms-toggle:hover { border-color: var(--arc); color: var(--arc); }
 .comms-toggle.active { border-color: var(--arc); color: var(--arc); }
 .friday-avatar {
@@ -387,6 +370,11 @@ body::before {
   background: #080c18;
   display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(0,212,255,0.06);
+  transition: filter 0.3s, box-shadow 0.3s;
+}
+.friday-avatar.speaking {
+  filter: drop-shadow(0 0 12px var(--arc-glow)) brightness(1.3);
+  box-shadow: 0 0 20px var(--arc-glow);
 }
 .comms-msg {
   font-size: 12px;
@@ -636,54 +624,33 @@ body::before {
   margin: 4px 0 14px;
 }
 .friday-side {
-  display: none;
+  display: block;
+  position: fixed;
+  right: 12px;
+  bottom: 80px;
+  width: 120px;
+  z-index: 0;
+  pointer-events: none;
   transition: filter 0.3s;
-  position: relative;
 }
 .friday-side.speaking {
   filter: drop-shadow(0 0 40px var(--arc-glow)) brightness(1.3);
-  animation: talkBounce 0.4s ease-in-out 6;
-}
-@keyframes talkBounce {
-  0%,100% { transform: translateY(-50%) scale(1); }
-  50% { transform: translateY(-50%) scale(1.05); }
-}
-.friday-bubble {
-  display: none;
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 12px;
-  background: rgba(8, 12, 24, 0.92);
-  border: 1px solid rgba(0, 212, 255, 0.2);
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--text-bright);
-  white-space: nowrap;
-  max-width: 240px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-  z-index: 5;
-  pointer-events: none;
-  line-height: 1.4;
-}
-.friday-side.speaking .friday-bubble { display: block; }
-.friday-bubble::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: rgba(0, 212, 255, 0.2);
 }
 .friday-side img {
   width: 100%;
   height: auto;
-  max-height: 90vh;
   display: block;
   object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .friday-side {
+    right: 24px;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    width: 280px;
+  }
 }
 .divider-line { flex: 1; height: 1px; background: rgba(0, 212, 255, 0.1); }
 .divider-text { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
@@ -731,25 +698,12 @@ body::before {
   .hud-header { margin-bottom: 28px; }
 }
 
-@media (min-width: 768px) {
-  .friday-side {
-    display: block;
-    position: fixed;
-    right: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 280px;
-    z-index: 0;
-    pointer-events: none;
-  }
-}
-
 @media (min-width: 1024px) {
-  .friday-side { width: 360px; right: 32px; }
+  .friday-side { width: 360px; }
 }
 
 @media (min-width: 1600px) {
-  .friday-side { width: 480px; right: 48px; }
+  .friday-side { width: 480px; }
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -774,7 +728,8 @@ body::before {
 
   <!-- HUD Header -->
   <div class="hud-header">
-    <span class="hud-badge">SECTOR 7G</span>
+    <span class="hud-badge">HYDRO BUDDY</span>
+    <span id="user-name-display"></span>
     <button class="hud-settings" id="settings-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -860,7 +815,8 @@ body::before {
       <span class="comms-time" id="next-reminder-time">--:--</span>
       <span class="comms-delay" id="next-reminder-countdown">Start reminders</span>
       <button class="comms-toggle" id="toggle-reminders">
-        <span id="toggle-icon">▶</span><span id="toggle-label" style="font-size:11px;font-weight:700;letter-spacing:1px;margin-left:2px;">START</span>
+        <span id="toggle-icon">▶</span>
+        <span id="toggle-label">Start</span>
       </button>
     </div>
     <div class="comms-row">
@@ -885,7 +841,6 @@ body::before {
 </div>
 
 <div class="friday-side">
-  <div class="friday-bubble">"Ready, Boss."</div>
   <img src="friday.png" alt="Friday">
 </div>
 
@@ -1189,117 +1144,84 @@ function getFemaleVoice() {
 }
 
 let _speechQueue = Promise.resolve();
-let _femaleVoice = null;
-
 function speak(text) {
   try {
     if (!window.speechSynthesis) return;
+
+    // Chain speaks to avoid Chrome cancel-then-speak bug
     _speechQueue = _speechQueue.then(() => new Promise(resolve => {
-      const trySpeak = (attempt) => {
-        if (attempt > 10) { resolve(); return; }
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length === 0) {
-          window.speechSynthesis.onvoiceschanged = () => trySpeak(attempt + 1);
-          return;
-        }
+      // Load voices if needed
+      const loadVoices = (attempt) => {
+        try {
+          if (attempt > 10) { resolve(); return; }
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            window.speechSynthesis.onvoiceschanged = () => loadVoices(attempt + 1);
+            return;
+          }
 
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.cancel();
 
-        // FIX 3: Respect state.selectedVoice picked by user in settings
-        let voice = null;
-        if (state.selectedVoice) {
-          voice = voices.find(v => v.name === state.selectedVoice) || null;
-        }
-        if (!voice) voice = _femaleVoice || getFemaleVoice();
-        if (voice) utterance.voice = voice;
+          const utterance = new SpeechSynthesisUtterance(text);
+          let voice = null;
+          // Try user-selected voice first
+          if (state.selectedVoice) {
+            voice = window.speechSynthesis.getVoices().find(v => v.name === state.selectedVoice);
+          }
+          // Fall back to fresh female voice detection
+          if (!voice) voice = getFemaleVoice();
+          if (voice) utterance.voice = voice;
+          utterance.volume = state.volume || 1;
+          utterance.rate = state.rate * 1.0;
+          utterance.pitch = state.pitch * 1.0;
 
-        // FIX 4: Use state.rate / state.pitch from settings sliders
-        utterance.volume = state.volume || 0.8;
+          utterance.onend = resolve;
+          utterance.onerror = resolve;
 
-        // Accent-aware tuning per language family
-        const lang = voice ? (voice.lang || '') : '';
-        let rateMulti = 1, pitchMulti = 1;
-        if (lang.startsWith('en-IN') || lang.startsWith('hi'))      { rateMulti = 0.92; pitchMulti = 1.05; }
-        else if (lang.startsWith('en-GB'))                           { rateMulti = 0.96; pitchMulti = 1.08; }
-        else if (lang.startsWith('en-AU'))                           { rateMulti = 0.95; pitchMulti = 1.02; }
-        else if (lang.startsWith('ar') || lang.startsWith('ur'))    { rateMulti = 0.88; pitchMulti = 0.96; }
-        else if (lang.startsWith('fr'))                              { rateMulti = 0.93; pitchMulti = 1.06; }
-        else if (lang.startsWith('es'))                              { rateMulti = 1.02; pitchMulti = 1.04; }
-        else if (lang.startsWith('de'))                              { rateMulti = 0.90; pitchMulti = 0.98; }
-        else if (lang.startsWith('ja') || lang.startsWith('ko'))    { rateMulti = 0.95; pitchMulti = 1.10; }
-        else if (lang.startsWith('zh'))                              { rateMulti = 0.90; pitchMulti = 1.05; }
-
-        utterance.rate  = (state.rate  || 0.9) * rateMulti;
-        utterance.pitch = (state.pitch || 1.1) * pitchMulti;
-
-        utterance.onend  = resolve;
-        utterance.onerror = resolve;
-
-        // Android Chrome: chunk long text to avoid cutoff
-        if (text.length > 180) {
-          const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-          let i = 0;
-          const next = () => {
-            if (i >= sentences.length) { resolve(); return; }
-            const u = new SpeechSynthesisUtterance(sentences[i++]);
-            if (voice) u.voice = voice;
-            u.volume = utterance.volume; u.rate = utterance.rate; u.pitch = utterance.pitch;
-            u.onend = next; u.onerror = next;
-            window.speechSynthesis.speak(u);
-          };
-          setTimeout(next, 50);
-          return;
-        }
-
-        setTimeout(() => {
-          try { window.speechSynthesis.speak(utterance); } catch(e) { resolve(); }
-        }, 50);
+          // Small delay to let cancel() settle (Chrome workaround)
+          setTimeout(() => {
+            try { window.speechSynthesis.speak(utterance); } catch(e) { resolve(); }
+          }, 50);
+        } catch(e) { resolve(); }
       };
-      trySpeak(0);
-    }));
-  } catch(e) {}
+      loadVoices(0);
+    })).catch(() => {}); // keep chain alive on error
+  } catch(e) {
+    // Silent fallback for browser restrictions
+  }
 }
 
-// FIX 2: initVoices populates the voice-select dropdown AND caches female voice
+let _femaleVoice = null;
 function initVoices() {
-  const populate = () => {
+  // Initialize speech synthesis
+  const checkVoices = () => {
     const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-    if (voices.length === 0) { setTimeout(populate, 150); return; }
+    if (voices.length > 0) {
+      // Store female voice for reuse
+      _femaleVoice = getFemaleVoice();
 
-    // Cache best female voice
-    _femaleVoice = getFemaleVoice();
+      // Populate voice dropdown with English voices
+      const select = document.getElementById('voice-select');
+      select.innerHTML = '';
+      const enVoices = voices.filter(v => v.lang && v.lang.startsWith('en'));
+      (enVoices.length ? enVoices : voices).forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang})`;
+        if (state.selectedVoice === v.name) opt.selected = true;
+        if (!state.selectedVoice && v.name === _femaleVoice?.name) opt.selected = true;
+        select.appendChild(opt);
+      });
 
-    // Populate dropdown
-    const sel = document.getElementById('voice-select');
-    if (!sel) return;
-    sel.innerHTML = '';
-
-    // Prefer English voices, fall back to all
-    const enVoices = voices.filter(v => v.lang && v.lang.startsWith('en'));
-    const list = enVoices.length > 0 ? enVoices : voices;
-
-    list.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.name;
-      opt.textContent = `${v.name} (${v.lang})`;
-      // Pre-select: saved preference first, then auto female
-      if (state.selectedVoice === v.name) opt.selected = true;
-      else if (!state.selectedVoice && _femaleVoice && v.name === _femaleVoice.name) opt.selected = true;
-      sel.appendChild(opt);
-    });
-
-    // If nothing pre-selected, default to first
-    if (!sel.value && list.length > 0) {
-      sel.value = list[0].name;
-      state.selectedVoice = list[0].name;
+      if (_femaleVoice) {
+        console.log('👩 Female voice found:', _femaleVoice.name);
+      }
+    } else {
+      // Wait for voices to load
+      setTimeout(checkVoices, 100);
     }
   };
-
-  if (window.speechSynthesis) {
-    if (window.speechSynthesis.getVoices().length > 0) populate();
-    else { window.speechSynthesis.onvoiceschanged = populate; setTimeout(populate, 500); }
-  }
+  checkVoices();
 }
 
 // ═══════════════════════════════════════════
@@ -1465,16 +1387,16 @@ function updateCountdown() {
 function updateReminderUI() {
   const btn = document.getElementById('toggle-reminders');
   const icon = document.getElementById('toggle-icon');
-
   const label = document.getElementById('toggle-label');
+
   if (state.remindersActive) {
     btn.classList.add('active');
     icon.textContent = '⏸';
-    if (label) label.textContent = 'PAUSE';
+    label.textContent = 'Pause';
   } else {
     btn.classList.remove('active');
     icon.textContent = '▶';
-    if (label) label.textContent = 'START';
+    label.textContent = 'Start';
   }
 
   if (state.nextReminderTimestamp) {
@@ -1492,18 +1414,29 @@ function updateReminderUI() {
 // WATER LOGGING
 // ═══════════════════════════════════════════
 function fridayTalk(phrase) {
-  // Update UI text + bubble
   updateFriday(phrase);
-  const el = document.querySelector('.friday-side');
-  if (el) {
-    const bubble = el.querySelector('.friday-bubble');
-    if (bubble) bubble.textContent = `"${phrase}"`;
-    el.classList.add('speaking');
-    clearTimeout(el._talkTimer);
-    el._talkTimer = setTimeout(() => el.classList.remove('speaking'), 3500);
+  // Avatar glow only
+  const avatar = document.querySelector('.friday-avatar');
+  if (avatar) {
+    avatar.classList.add('speaking');
+    setTimeout(() => avatar.classList.remove('speaking'), 1200);
   }
-  // Route through speak() so voice selection, rate, pitch, accent all apply
-  speak(phrase);
+  // Speak directly within user gesture
+  try {
+    if (window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance(phrase);
+      let voice = null;
+      if (state.selectedVoice) {
+        voice = window.speechSynthesis.getVoices().find(v => v.name === state.selectedVoice);
+      }
+      if (!voice) voice = getFemaleVoice();
+      if (voice) u.voice = voice;
+      u.volume = state.volume || 1;
+      u.rate = state.rate || 0.9;
+      u.pitch = state.pitch || 1.1;
+      window.speechSynthesis.speak(u);
+    }
+  } catch(e) {}
 }
 
 function drinkGlass() {
@@ -1568,28 +1501,38 @@ function updateProgressUI() {
   // Circle
   const circ = 238.8;
   const offset = circ - (circ * pct / 100);
-  document.getElementById('circle-fill').style.strokeDashoffset = offset;
+  const $ = id => document.getElementById(id);
+  const el = id => { const e = $(id); if (!e) console.warn('Missing element:', id); return e; };
+
+  const circleFill = el('circle-fill');
+  if (circleFill) circleFill.style.strokeDashoffset = offset;
 
   // Stats
-  document.getElementById('remaining-count').textContent = Math.max(0, state.targetGlasses - state.glassesDrunk);
-  document.getElementById('streak-count').textContent = state.streak;
+  const remaining = el('remaining-count');
+  if (remaining) remaining.textContent = Math.max(0, state.targetGlasses - state.glassesDrunk);
+  const streak = el('streak-count');
+  if (streak) streak.textContent = state.streak;
 
   // Avg gap
-  if (state.logTimes.length >= 2) {
-    const gaps = [];
-    for (let i = 1; i < state.logTimes.length; i++) {
-      gaps.push(new Date(state.logTimes[i]) - new Date(state.logTimes[i - 1]));
+  const avgEl = el('avg-time');
+  if (avgEl) {
+    if (state.logTimes.length >= 2) {
+      const gaps = [];
+      for (let i = 1; i < state.logTimes.length; i++) {
+        gaps.push(new Date(state.logTimes[i]) - new Date(state.logTimes[i - 1]));
+      }
+      const avgMs = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      const avgMin = Math.round(avgMs / 60000);
+      avgEl.textContent = avgMin >= 60
+        ? Math.round(avgMin / 60) + 'h'
+        : avgMin + 'm';
+    } else {
+      avgEl.textContent = '--';
     }
-    const avgMs = gaps.reduce((a, b) => a + b, 0) / gaps.length;
-    const avgMin = Math.round(avgMs / 60000);
-    document.getElementById('avg-time').textContent = avgMin >= 60
-      ? Math.round(avgMin / 60) + 'h'
-      : avgMin + 'm';
-  } else {
-    document.getElementById('avg-time').textContent = '--';
   }
 
-  document.getElementById('user-name-display').textContent = state.userName;
+  const nameEl = el('user-name-display');
+  if (nameEl) nameEl.textContent = state.userName;
 }
 
 function updateFriday(msg) {
@@ -1633,7 +1576,7 @@ function removeCustomTime(idx) {
 
 function saveSettings() {
   state.userName = document.getElementById('user-name').value || 'Farman';
-  state.targetGlasses = parseInt(document.getElementById('target-glasses').value) || 7;
+  state.targetGlasses = parseInt(document.getElementById('target-glasses').value) || 8;
   state.mlPerGlass = parseInt(document.getElementById('ml-per-glass').value) || 250;
   state.intervalHours = parseFloat(document.getElementById('interval-hours').value);
   state.startHour = document.getElementById('start-hour').value;
@@ -1764,8 +1707,14 @@ function showToast(msg, type = 'info') {
 }
 
 // ═══════════════════════════════════════════
-// PWA INSTALL
+// SERVICE WORKER
 // ═══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js?v=2').then(reg => {
+    console.log('SW registered');
+  }).catch(err => console.log('SW error:', err));
+}
+
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
@@ -1788,69 +1737,7 @@ document.getElementById('dismiss-install').onclick = () => {
   localStorage.setItem('installDismissed', '1');
 };
 
-// ═══════════════════════════════════════════
-// SERVICE WORKER — inline blob, no external sw.js needed
-// ═══════════════════════════════════════════
-if ('serviceWorker' in navigator) {
-  const swCode = `
-const CACHE = 'hydrobuddy-v3';
-self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => { self.clients.claim(); });
-self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-});
-self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'SCHEDULE_NOTIFICATION') {
-    const { delay, title, body } = e.data;
-    setTimeout(() => {
-      self.registration.showNotification(title, {
-        body,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💧</text></svg>',
-        tag: 'hydrobuddy-reminder',
-        renotify: true,
-        vibrate: [200, 100, 200],
-        actions: [
-          { action: 'logged', title: '💧 Logged!' },
-          { action: 'snooze', title: '⏰ 15 min' }
-        ]
-      });
-    }, Math.max(delay, 0));
-  }
-});
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  if (e.action === 'snooze') {
-    setTimeout(() => {
-      self.registration.showNotification('HydroBuddy — Snooze Over', {
-        body: 'Your 15-minute snooze is up. Time to hydrate, Boss!',
-        tag: 'hydrobuddy-snooze', vibrate: [300, 100, 300]
-      });
-    }, 15 * 60 * 1000);
-    return;
-  }
-  e.waitUntil(
-    self.clients.matchAll({ type: 'window' }).then(clients => {
-      const c = clients.find(x => x.url.includes('hydrobuddy') || x.url.endsWith('/'));
-      if (c) return c.focus();
-      return self.clients.openWindow('/');
-    })
-  );
-});
-  `;
-  const swBlob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl  = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl, { scope: '/' })
-    .then(reg => {
-      console.log('SW registered (inline blob)');
-      // Pass controller ref once active
-      if (reg.installing) {
-        reg.installing.addEventListener('statechange', () => {
-          if (reg.active) navigator.serviceWorker.controller;
-        });
-      }
-    })
-    .catch(err => console.log('SW error:', err));
-}
+// SERVICE WORKER removed — inlined above
 
 // ═══════════════════════════════════════════
 // EVENT LISTENERS
