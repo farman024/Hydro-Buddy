@@ -1,4 +1,4 @@
-const CACHE = 'hydro-buddy-v6';
+const CACHE = 'hydro-buddy-v7';
 const URLS = ['./', './index.html', './manifest.json', './logo-192.png', './logo-512.png'];
 
 self.addEventListener('install', e => {
@@ -13,12 +13,23 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('chrome-extension') || e.request.method !== 'GET') return;
+
+  const isNavigate = e.request.mode === 'navigate';
+
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-      const clone = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, clone));
-      return res;
-    })).catch(() => caches.match(e.request))
+    isNavigate
+      // Network-first: always serve latest HTML, cached copy only when offline
+      ? fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        }).catch(() => caches.match(e.request).then(cached => cached || new Response('Offline', { status: 503 })))
+      // Cache-first for static assets
+      : caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })).catch(() => caches.match(e.request))
   );
 });
 
